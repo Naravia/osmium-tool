@@ -25,6 +25,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--improved", type=Path, required=True)
+    parser.add_argument("--previous", type=Path,
+                        help="Optional intermediate optimised binary to compare in the same rounds")
     parser.add_argument("--reference", type=Path, required=True,
                         help="Original benchmark-results.json, including expected output hashes")
     parser.add_argument("--input", type=Path, required=True)
@@ -36,13 +38,15 @@ def main():
     if args.repeats < 1:
         parser.error("--repeats must be positive")
     # osmium interprets suffixes in argv[0] as subcommands.
-    if args.baseline.name != "osmium" or args.improved.name != "osmium":
-        parser.error("Both binaries must be named osmium; place them in separate directories")
+    binaries = {"baseline": args.baseline, "improved": args.improved}
+    if args.previous is not None:
+        binaries["previous"] = args.previous
+    if any(path.name != "osmium" for path in binaries.values()):
+        parser.error("All binaries must be named osmium; place them in separate directories")
     args.output_dir.mkdir(parents=True, exist_ok=False)
     reference = json.loads(args.reference.read_text())
-    identities = {name: identity(path) for name, path in (
-        ("input", args.input), ("classic", args.classic), ("bool", args.boolean),
-        ("baseline", args.baseline), ("improved", args.improved))}
+    inputs = {"input": args.input, "classic": args.classic, "bool": args.boolean}
+    identities = {name: identity(path) for name, path in {**inputs, **binaries}.items()}
     expected_inputs = {"input": reference["input"]["sha256"],
                        "classic": reference["filters"]["classic"]["sha256"],
                        "bool": reference["filters"]["bool"]["sha256"]}
@@ -59,6 +63,11 @@ def main():
         ("improved_bool_classic", "improved", "tags-filter-bool", "classic"),
         ("improved_bool_compound", "improved", "tags-filter-bool", "bool"),
     ]
+    if args.previous is not None:
+        cases[3:3] = [
+            ("previous_bool_classic", "previous", "tags-filter-bool", "classic"),
+            ("previous_bool_compound", "previous", "tags-filter-bool", "bool"),
+        ]
     env = dict(os.environ, OSMIUM_POOL_THREADS="1")
     result = {
         "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -75,7 +84,7 @@ def main():
         },
         "versions": {}, "runs": [], "summary": {},
     }
-    for name in ("baseline", "improved"):
+    for name in binaries:
         result["versions"][name] = subprocess.check_output(
             [identities[name]["path"], "--version"], env=env, text=True)
     result_path = args.output_dir / "results.json"

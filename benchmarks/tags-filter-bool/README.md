@@ -1,5 +1,9 @@
 # Brandenburg matching benchmark
 
+The initial experiment is recorded below. The follow-up predicate-sharing
+and lazy-cache experiment is documented in
+[`predicate-cache.md`](predicate-cache.md).
+
 This benchmark compares `tags-filter` and the original/optimised
 `tags-filter-bool` using the exact Brandenburg PBF and both expression files
 from [issue #1](https://github.com/Naravia/osmium-tool/issues/1).

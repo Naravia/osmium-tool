@@ -1,0 +1,651 @@
+{
+  "created_at": "2026-11-06T19:58:50.460204+00:00",
+  "identities": {
+    "input": {
+      "path": "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+      "sha256": "c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111",
+      "bytes": 296211267
+    },
+    "classic": {
+      "path": "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+      "sha256": "eaa2e9f109afeec29444e699406d270f16e6f6ced7639a2d354c85f9295ac48e",
+      "bytes": 7713
+    },
+    "bool": {
+      "path": "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+      "sha256": "eec4c4d01d699929b61f4063036b0960ed668d3e4522eece74766229cf605c01",
+      "bytes": 15498
+    },
+    "baseline": {
+      "path": "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+      "sha256": "78eb079a9fb5727f436e50abbea32248fc0a1b5b5779dcb6f48d6ccd33beab85",
+      "bytes": 2913136
+    },
+    "improved": {
+      "path": "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+      "sha256": "1670a21071f7d055354a426991966e2ddcfd0397777cc7ac0580f1e7d8e95fab",
+      "bytes": 2935200
+    },
+    "previous": {
+      "path": "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+      "sha256": "73d629d6dbf38c7a70a08e730b62280021f5154aa05a15e58928a80624c20d57",
+      "bytes": 2921856
+    }
+  },
+  "platform": {
+    "system": "Linux-7.0.14-12-pve-x86_64-with-glibc2.41",
+    "machine": "x86_64"
+  },
+  "method": {
+    "repeats": 3,
+    "seed": 20261106,
+    "warmups": 0,
+    "cache": "No cache flush; input SHA-256 read before runs",
+    "order": "Deterministically shuffled within each complete round",
+    "environment": {
+      "OSMIUM_POOL_THREADS": "1"
+    },
+    "reference_mode": "-R/--omit-referenced",
+    "output_format": "PBF",
+    "timing": "time.perf_counter wall time including PBF output and process exit; output hashing excluded",
+    "concurrency": "One filter process at a time"
+  },
+  "versions": {
+    "baseline": "osmium version 1.19.1\nlibosmium version 2.23.1\nSupported PBF compression types: none zlib\n\nCopyright (C) 2013-2026  Jochen Topf <jochen@topf.org>\nLicense: GNU GENERAL PUBLIC LICENSE Version 3 <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+    "improved": "osmium version 1.19.1\nlibosmium version 2.23.1\nSupported PBF compression types: none zlib\n\nCopyright (C) 2013-2026  Jochen Topf <jochen@topf.org>\nLicense: GNU GENERAL PUBLIC LICENSE Version 3 <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+    "previous": "osmium version 1.19.1\nlibosmium version 2.23.1\nSupported PBF compression types: none zlib\n\nCopyright (C) 2013-2026  Jochen Topf <jochen@topf.org>\nLicense: GNU GENERAL PUBLIC LICENSE Version 3 <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+  },
+  "runs": [
+    {
+      "round": 1,
+      "label": "previous_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_classic-1.osm.pbf"
+      ],
+      "wall_seconds": 27.628364616073668,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_classic-1.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 1,
+      "label": "baseline_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_compound-1.osm.pbf"
+      ],
+      "wall_seconds": 62.52294172416441,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_compound-1.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 1,
+      "label": "previous_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_compound-1.osm.pbf"
+      ],
+      "wall_seconds": 41.62785041704774,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_compound-1.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 1,
+      "label": "baseline_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_classic-1.osm.pbf"
+      ],
+      "wall_seconds": 62.704186401097104,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_classic-1.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 1,
+      "label": "improved_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf"
+      ],
+      "wall_seconds": 33.72354413103312,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 1,
+      "label": "baseline_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_classic-1.osm.pbf"
+      ],
+      "wall_seconds": 26.47948184981942,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_classic-1.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 1,
+      "label": "improved_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_classic-1.osm.pbf"
+      ],
+      "wall_seconds": 18.670304737985134,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_classic-1.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "baseline_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_classic-2.osm.pbf"
+      ],
+      "wall_seconds": 62.51329574501142,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_classic-2.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "baseline_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_classic-2.osm.pbf"
+      ],
+      "wall_seconds": 26.44536442984827,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_classic-2.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "improved_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-2.osm.pbf"
+      ],
+      "wall_seconds": 33.7969593340531,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-2.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "improved_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_classic-2.osm.pbf"
+      ],
+      "wall_seconds": 18.535998514853418,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_classic-2.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "previous_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_classic-2.osm.pbf"
+      ],
+      "wall_seconds": 27.59590881294571,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_classic-2.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "baseline_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_compound-2.osm.pbf"
+      ],
+      "wall_seconds": 62.374535423005,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_compound-2.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 2,
+      "label": "previous_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_compound-2.osm.pbf"
+      ],
+      "wall_seconds": 41.39687913097441,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_compound-2.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "baseline_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_compound-3.osm.pbf"
+      ],
+      "wall_seconds": 62.261381414020434,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_compound-3.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "previous_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_compound-3.osm.pbf"
+      ],
+      "wall_seconds": 41.555362101178616,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_compound-3.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "previous_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/previous/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_classic-3.osm.pbf"
+      ],
+      "wall_seconds": 27.639480588957667,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/previous_bool_classic-3.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "baseline_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_classic-3.osm.pbf"
+      ],
+      "wall_seconds": 62.73097271216102,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_bool_classic-3.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "improved_bool_compound",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-3.osm.pbf"
+      ],
+      "wall_seconds": 33.68009184906259,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-3.osm.pbf",
+        "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+        "bytes": 3488658
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "baseline_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/baseline/osmium",
+        "tags-filter",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_classic-3.osm.pbf"
+      ],
+      "wall_seconds": 26.48936824197881,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/baseline_classic-3.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    },
+    {
+      "round": 3,
+      "label": "improved_bool_classic",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter-bool",
+        "--no-progress",
+        "--omit-referenced",
+        "--expressions=/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-classic.txt",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "--output-format=pbf",
+        "--output",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_classic-3.osm.pbf"
+      ],
+      "wall_seconds": 18.54897009790875,
+      "return_code": 0,
+      "stderr": "",
+      "output": {
+        "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_classic-3.osm.pbf",
+        "sha256": "a080e32bfd9a0fef6dc2517615a79ca349ef1038db982e9f79962bf4b7b0b726",
+        "bytes": 10790090
+      },
+      "matches_original_output": true
+    }
+  ],
+  "summary": {
+    "baseline_classic": {
+      "seconds": [
+        26.47948184981942,
+        26.44536442984827,
+        26.48936824197881
+      ],
+      "median_seconds": 26.47948184981942,
+      "min_seconds": 26.44536442984827,
+      "max_seconds": 26.48936824197881
+    },
+    "baseline_bool_classic": {
+      "seconds": [
+        62.704186401097104,
+        62.51329574501142,
+        62.73097271216102
+      ],
+      "median_seconds": 62.704186401097104,
+      "min_seconds": 62.51329574501142,
+      "max_seconds": 62.73097271216102
+    },
+    "baseline_bool_compound": {
+      "seconds": [
+        62.52294172416441,
+        62.374535423005,
+        62.261381414020434
+      ],
+      "median_seconds": 62.374535423005,
+      "min_seconds": 62.261381414020434,
+      "max_seconds": 62.52294172416441
+    },
+    "previous_bool_classic": {
+      "seconds": [
+        27.628364616073668,
+        27.59590881294571,
+        27.639480588957667
+      ],
+      "median_seconds": 27.628364616073668,
+      "min_seconds": 27.59590881294571,
+      "max_seconds": 27.639480588957667
+    },
+    "previous_bool_compound": {
+      "seconds": [
+        41.62785041704774,
+        41.39687913097441,
+        41.555362101178616
+      ],
+      "median_seconds": 41.555362101178616,
+      "min_seconds": 41.39687913097441,
+      "max_seconds": 41.62785041704774
+    },
+    "improved_bool_classic": {
+      "seconds": [
+        18.670304737985134,
+        18.535998514853418,
+        18.54897009790875
+      ],
+      "median_seconds": 18.54897009790875,
+      "min_seconds": 18.535998514853418,
+      "max_seconds": 18.670304737985134
+    },
+    "improved_bool_compound": {
+      "seconds": [
+        33.72354413103312,
+        33.7969593340531,
+        33.68009184906259
+      ],
+      "median_seconds": 33.72354413103312,
+      "min_seconds": 33.68009184906259,
+      "max_seconds": 33.7969593340531
+    }
+  },
+  "all_outputs_match_original": true,
+  "completed_at": "2026-11-06T20:12:29.730468+00:00",
+  "source": {
+    "baseline_commit": "d93bfcbd6b8f54e2620b95b5f16998a5e840c40a",
+    "previous_branch_commit": "ef57fc93fed376eb3aa26f680471c8a7622bb6a5",
+    "improved_implementation_commit": "5649eb33966a92b9b3850bd110e6151cc74f9c37",
+    "branch": "perf/1-tags-filter-bool-predicate-cache",
+    "note": "Improved binary compiled before recording the implementation commit; binary identities identify the measured executables."
+  },
+  "build": {
+    "compiler": "GCC 14.2.0 (Debian 14.2.0-19)",
+    "build_type": "Release",
+    "flags": "-O3 -DNDEBUG -std=c++17",
+    "libosmium": "2.23.1"
+  }
+}
