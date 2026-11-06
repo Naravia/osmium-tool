@@ -29,7 +29,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <osmium/tags/tags_filter.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace tags_filter_bool {
@@ -58,6 +60,7 @@ namespace tags_filter_bool {
 
         osmium::osm_entity_bits::type m_entities = osmium::osm_entity_bits::nwr;
         std::vector<osmium::TagMatcher> m_matchers;
+        std::vector<std::string> m_matcher_sources;
         std::vector<Node> m_nodes;
         std::size_t m_root = 0;
         bool m_matches_empty = false;
@@ -82,10 +85,50 @@ namespace tags_filter_bool {
 
     class Filter {
 
-        std::vector<Expression> m_expressions;
+    public:
+
+        // Scratch belongs to the caller, not the immutable matching plan.
+        // Construct after adding expressions; matching never grows this buffer.
+        class Context {
+
+            friend class Filter;
+
+            struct Entry {
+                std::uint64_t generation = 0;
+                bool value = false;
+            };
+
+            std::vector<Entry> m_entries;
+            std::uint64_t m_generation = 0;
+
+            explicit Context(std::size_t size) :
+                m_entries(size) {
+            }
+
+            void begin_match() noexcept;
+
+        public:
+
+            Context() = default;
+
+        }; // class Context
+
+    private:
+
+        struct Program {
+            std::vector<Expression::Node> nodes;
+            std::size_t root;
+        };
+
+        std::vector<Program> m_expressions;
+        std::vector<osmium::TagMatcher> m_predicates;
+        std::unordered_map<std::string, std::size_t> m_predicate_ids;
         osmium::TagsFilter m_atomic_filter;
         bool m_matches_empty = false;
         bool m_use_atomic_or = true;
+
+        template <bool Cached>
+        bool evaluate(const Program& expression, std::size_t index, const osmium::TagList& tags, Context* context) const noexcept;
 
     public:
 
@@ -95,7 +138,17 @@ namespace tags_filter_bool {
             return m_expressions.empty();
         }
 
+        std::size_t predicate_count() const noexcept {
+            return m_predicates.size();
+        }
+
+        Context make_context() const {
+            return Context{m_predicates.size()};
+        }
+
+        // The context-free overload remains allocation-free and uncached.
         bool matches(const osmium::TagList& tags) const noexcept;
+        bool matches(const osmium::TagList& tags, Context& context) const noexcept;
 
     }; // class Filter
 

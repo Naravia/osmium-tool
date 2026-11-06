@@ -37,6 +37,26 @@ left-to-right short-circuit evaluator and releases the compiled rules.
 Node, way, relation, and area filters maintain these plans independently.
 Neither path allocates during matching or changes reference traversal.
 
+Each filter now interns predicates by their decoded source text. Its expression
+programs reference a single matcher table instead of retaining per-expression
+matcher copies. The atomic-OR fast path also omits repeated identical rules.
+This is conservative deduplication, not canonicalisation of equivalent syntax.
+
+For mixed expressions the command supplies an explicit `Filter::Context`,
+allocated once after setup for each node/way/relation/area filter. Evaluation
+is lazy and left-to-right; the first visit to a predicate scans the tags and
+caches its Boolean result, and further visits in that matching invocation
+reuse it. Generation stamps invalidate results on every cached invocation,
+including repeated object IDs, buffer addresses, and input passes. Wraparound
+clears stamps before reusing generation 1. Empty tags and atomic ORs bypass
+the per-predicate cache entirely.
+
+`Filter` itself has no mutable evaluation state. Independent contexts may be
+used with the same immutable filter. The context-free overload remains
+uncached and allocation-free; a mismatched context size falls back to that
+overload rather than allocating during matching. Recreate contexts after
+adding expressions to restore caching if the predicate count changed.
+
 ## Updating upstream
 
 1. Rebase the feature branch onto the desired upstream version. Integration

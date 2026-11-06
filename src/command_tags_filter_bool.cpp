@@ -145,6 +145,10 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
     if (vm.count("expressions")) {
         read_expressions_file(vm["expressions"].as<std::string>());
     }
+    for (const auto type : {osmium::item_type::node, osmium::item_type::way, osmium::item_type::relation}) {
+        m_filter_contexts(type) = m_filters(type).make_context();
+    }
+    m_area_context = m_area_filters.make_context();
     return true;
 }
 
@@ -181,13 +185,13 @@ osmium::osm_entity_bits::type CommandTagsFilterBool::get_needed_types() const {
     return types;
 }
 
-bool CommandTagsFilterBool::matches_node(const osmium::Node& node) const noexcept {
-    return m_filters(osmium::item_type::node).matches(node.tags());
+bool CommandTagsFilterBool::matches_node(const osmium::Node& node) noexcept {
+    return m_filters(osmium::item_type::node).matches(node.tags(), m_filter_contexts(osmium::item_type::node));
 }
 
-bool CommandTagsFilterBool::matches_way(const osmium::Way& way) const noexcept {
-    return m_filters(osmium::item_type::way).matches(way.tags()) ||
-           (way.nodes().size() >= 4 && way.is_closed() && m_area_filters.matches(way.tags()));
+bool CommandTagsFilterBool::matches_way(const osmium::Way& way) noexcept {
+    return m_filters(osmium::item_type::way).matches(way.tags(), m_filter_contexts(osmium::item_type::way)) ||
+           (way.nodes().size() >= 4 && way.is_closed() && m_area_filters.matches(way.tags(), m_area_context));
 }
 
 namespace {
@@ -199,12 +203,12 @@ bool is_multipolygon(const osmium::Relation& relation) noexcept {
 
 } // anonymous namespace
 
-bool CommandTagsFilterBool::matches_relation(const osmium::Relation& relation) const noexcept {
-    return m_filters(osmium::item_type::relation).matches(relation.tags()) ||
-           (is_multipolygon(relation) && m_area_filters.matches(relation.tags()));
+bool CommandTagsFilterBool::matches_relation(const osmium::Relation& relation) noexcept {
+    return m_filters(osmium::item_type::relation).matches(relation.tags(), m_filter_contexts(osmium::item_type::relation)) ||
+           (is_multipolygon(relation) && m_area_filters.matches(relation.tags(), m_area_context));
 }
 
-bool CommandTagsFilterBool::matches_object(const osmium::OSMObject& object) const noexcept {
+bool CommandTagsFilterBool::matches_object(const osmium::OSMObject& object) noexcept {
     switch (object.type()) {
         case osmium::item_type::node:
             return matches_node(static_cast<const osmium::Node&>(object));

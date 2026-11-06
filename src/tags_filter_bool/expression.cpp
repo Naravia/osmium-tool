@@ -227,6 +227,7 @@ namespace tags_filter_bool {
             }
             const auto matcher = m_expression.m_matchers.size();
             m_expression.m_matchers.push_back(get_tag_matcher(m_text));
+            m_expression.m_matcher_sources.push_back(m_text);
             const auto node = add_node(Expression::Operation::predicate, matcher);
             next_token();
             return node;
@@ -321,20 +322,76 @@ namespace tags_filter_bool {
     }
 
     void Filter::add(const Expression& expression) {
-        m_expressions.push_back(expression);
         m_matches_empty = m_matches_empty || expression.m_matches_empty;
-        if (m_use_atomic_or) {
-            if (expression.m_is_atomic_or) {
-                // The parser stores leaves in source order. For an OR-only
-                // tree, testing them tag-major has the same existential result.
-                for (const auto& matcher : expression.m_matchers) {
-                    m_atomic_filter.add_rule(true, matcher);
+        if (m_use_atomic_or && !expression.m_is_atomic_or) {
+            m_use_atomic_or = false;
+            m_atomic_filter = osmium::TagsFilter{};
+        }
+        std::vector<std::size_t> predicate_ids;
+        predicate_ids.reserve(expression.m_matchers.size());
+        for (std::size_t i = 0; i < expression.m_matchers.size(); ++i) {
+            // Decoded predicate text is a conservative identity: quoting and
+            // escapes have already been handled, atomic semantics are unchanged.
+            const auto entry = m_predicate_ids.emplace(expression.m_matcher_sources[i], m_predicates.size());
+            if (entry.second) {
+                m_predicates.push_back(expression.m_matchers[i]);
+                if (m_use_atomic_or) {
+                    m_atomic_filter.add_rule(true, m_predicates.back());
                 }
-            } else {
-                m_use_atomic_or = false;
-                m_atomic_filter = osmium::TagsFilter{};
+            }
+            predicate_ids.push_back(entry.first->second);
+        }
+        Program program{expression.m_nodes, expression.m_root};
+        for (auto& node : program.nodes) {
+            if (node.operation == Expression::Operation::predicate) {
+                node.matcher = predicate_ids[node.matcher];
             }
         }
+        m_expressions.push_back(std::move(program));
+    }
+
+    void Filter::Context::begin_match() noexcept {
+        // A new generation for every invocation, never keyed by OSM object ID
+        // or TagList address. Both can repeat between types/versions/passes.
+        if (++m_generation == 0) {
+            std::fill(m_entries.begin(), m_entries.end(), Entry{});
+            ++m_generation;
+        }
+    }
+
+    template <bool Cached>
+    bool Filter::evaluate(const Program& expression, std::size_t index, const osmium::TagList& tags, Context* context) const noexcept {
+        const auto& node = expression.nodes[index];
+        switch (node.operation) {
+            case Expression::Operation::predicate:
+                if constexpr (Cached) {
+                    auto& entry = context->m_entries[node.matcher];
+                    if (entry.generation != context->m_generation) {
+                        entry.value = m_predicates[node.matcher](tags);
+                        entry.generation = context->m_generation;
+                    }
+                    return entry.value;
+                } else {
+                    return m_predicates[node.matcher](tags);
+                }
+            case Expression::Operation::all:
+                for (const auto child : node.children) {
+                    if (!evaluate<Cached>(expression, child, tags, context)) {
+                        return false;
+                    }
+                }
+                return true;
+            case Expression::Operation::any:
+                for (const auto child : node.children) {
+                    if (evaluate<Cached>(expression, child, tags, context)) {
+                        return true;
+                    }
+                }
+                return false;
+            case Expression::Operation::negate:
+                return !evaluate<Cached>(expression, node.children.front(), tags, context);
+        }
+        return false;
     }
 
     bool Filter::matches(const osmium::TagList& tags) const noexcept {
@@ -344,9 +401,26 @@ namespace tags_filter_bool {
         if (m_use_atomic_or) {
             return osmium::tags::match_any_of(tags, m_atomic_filter);
         }
-        return std::any_of(m_expressions.begin(), m_expressions.end(), [&](const Expression& expression) {
-            // Empty tags were handled above for the entire filter.
-            return expression.evaluate(expression.m_root, tags);
+        return std::any_of(m_expressions.begin(), m_expressions.end(), [&](const Program& expression) {
+            return evaluate<false>(expression, expression.root, tags, nullptr);
+        });
+    }
+
+    bool Filter::matches(const osmium::TagList& tags, Context& context) const noexcept {
+        if (tags.empty() || empty()) {
+            return m_matches_empty;
+        }
+        if (m_use_atomic_or) {
+            return osmium::tags::match_any_of(tags, m_atomic_filter);
+        }
+        // A default/undersized context, for example after adding expressions,
+        // safely falls back rather than allocating or reading outside storage.
+        if (context.m_entries.size() != m_predicates.size()) {
+            return matches(tags);
+        }
+        context.begin_match();
+        return std::any_of(m_expressions.begin(), m_expressions.end(), [&](const Program& expression) {
+            return evaluate<true>(expression, expression.root, tags, &context);
         });
     }
 

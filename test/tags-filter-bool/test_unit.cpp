@@ -125,10 +125,15 @@ TEST_CASE("Generated Boolean expressions agree with independent truth tables", "
     for (unsigned int i = 0; i < 100; ++i) {
         const auto formula = generate_formula(random, 6);
         const tags_filter_bool::Expression expression{formula.source};
+        tags_filter_bool::Filter filter;
+        filter.add(expression);
+        auto context = filter.make_context();
         for (unsigned int assignment = 0; assignment < 32; ++assignment) {
             INFO(formula.source);
             const bool expected = (formula.truth_table & (std::uint32_t{1} << assignment)) != 0;
             REQUIRE(expression.matches(buffers[assignment].get<osmium::Node>(0).tags()) == expected);
+            REQUIRE(filter.matches(buffers[assignment].get<osmium::Node>(0).tags()) == expected);
+            REQUIRE(filter.matches(buffers[assignment].get<osmium::Node>(0).tags(), context) == expected);
         }
     }
 }
@@ -313,6 +318,7 @@ TEST_CASE("Adding mixed expressions switches atomic-OR filters to general evalua
     filter.add(negation);
     filter.add(later_atomic);
     const auto copied = filter;
+    auto context = filter.make_context();
     for (unsigned int assignment = 0; assignment < 64; ++assignment) {
         std::vector<std::pair<std::string, std::string>> tags;
         for (unsigned int variable = 0; variable < 6; ++variable) {
@@ -327,5 +333,95 @@ TEST_CASE("Adding mixed expressions switches atomic-OR filters to general evalua
                               (assignment & 16U) == 0 || (assignment & 32U) != 0;
         REQUIRE(filter.matches(tag_list) == expected);
         REQUIRE(copied.matches(tag_list) == expected);
+        REQUIRE(filter.matches(tag_list, context) == expected);
+    }
+}
+
+TEST_CASE("Boolean filters intern decoded predicates without merging different atomic semantics", "[tags-filter-bool]") {
+    tags_filter_bool::Filter filter;
+    filter.add(tags_filter_bool::Expression{"(key=one AND name) OR (key=one AND NOT name)"});
+    REQUIRE(filter.predicate_count() == 2);
+    filter.add(tags_filter_bool::Expression{"key=one"});
+    filter.add(tags_filter_bool::Expression{"NOT key=one"});
+    REQUIRE(filter.predicate_count() == 2);
+    filter.add(tags_filter_bool::Expression{"key!=one"});
+    REQUIRE(filter.predicate_count() == 3);
+    filter.add(tags_filter_bool::Expression{"name='Rock AND Roll'"});
+    filter.add(tags_filter_bool::Expression{"name=\"Rock AND Roll\""});
+    REQUIRE(filter.predicate_count() == 4);
+
+    tags_filter_bool::Filter atomic;
+    atomic.add(tags_filter_bool::Expression{"key=one OR key=one OR name"});
+    atomic.add(tags_filter_bool::Expression{"name OR key=one"});
+    REQUIRE(atomic.predicate_count() == 2);
+}
+
+TEST_CASE("Predicate contexts do not retain results across matching invocations or filter plans", "[tags-filter-bool]") {
+    const tags_filter_bool::Expression expression{"(a AND b) OR (NOT a AND c)"};
+    const tags_filter_bool::Expression other_expression{"NOT c OR (NOT b AND a)"};
+    tags_filter_bool::Filter filter;
+    tags_filter_bool::Filter other;
+    filter.add(expression);
+    other.add(other_expression);
+    REQUIRE(filter.predicate_count() == other.predicate_count());
+    const auto copied = filter;
+    auto context = filter.make_context();
+    auto independent = filter.make_context();
+    auto copied_context = context;
+    osmium::memory::Buffer buffer{1024};
+    const auto* const address = buffer.data();
+    for (unsigned int round = 0; round < 3; ++round) {
+        for (unsigned int assignment = 0; assignment < 8; ++assignment) {
+            std::vector<std::pair<std::string, std::string>> tags;
+            for (unsigned int variable = 0; variable < 3; ++variable) {
+                if ((assignment & (1U << variable)) != 0) {
+                    tags.emplace_back(std::string(1, static_cast<char>('a' + variable)), "yes");
+                }
+            }
+            buffer.clear();
+            const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_id(1), osmium::builder::attr::_tags(tags));
+            const auto& tag_list = buffer.get<osmium::Node>(offset).tags();
+            REQUIRE(buffer.data() == address);
+            const bool expected = expression.matches(tag_list);
+            REQUIRE(filter.matches(tag_list, context) == expected);
+            REQUIRE(other.matches(tag_list, context) == other_expression.matches(tag_list));
+            REQUIRE(copied.matches(tag_list, context) == expected);
+            REQUIRE(filter.matches(tag_list, independent) == expected);
+            REQUIRE(filter.matches(tag_list, copied_context) == expected);
+        }
+    }
+}
+
+TEST_CASE("Missing or stale predicate contexts safely fall back without resizing", "[tags-filter-bool]") {
+    tags_filter_bool::Filter filter;
+    filter.add(tags_filter_bool::Expression{"key=one AND NOT key=two"});
+    auto context = filter.make_context();
+    tags_filter_bool::Filter::Context unprepared;
+    filter.add(tags_filter_bool::Expression{"other AND NOT absent"});
+    osmium::memory::Buffer buffer{1024};
+    const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tag("other", "yes"));
+    const auto& tags = buffer.get<osmium::Node>(offset).tags();
+    REQUIRE(filter.matches(tags));
+    REQUIRE(filter.matches(tags, context));
+    REQUIRE(filter.matches(tags, unprepared));
+    context = filter.make_context();
+    REQUIRE(filter.matches(tags, context));
+}
+
+TEST_CASE("Cached predicates retain existential matching with duplicate keys", "[tags-filter-bool]") {
+    const tags_filter_bool::Expression expression{"(key=one AND key=two) OR (NOT key=one AND key!=one)"};
+    tags_filter_bool::Filter filter;
+    filter.add(expression);
+    REQUIRE(filter.predicate_count() == 3);
+    auto context = filter.make_context();
+    const std::vector<std::vector<std::pair<std::string, std::string>>> tag_sets{
+        {}, {{"key", ""}}, {{"key", "one"}}, {{"key", "two"}},
+        {{"key", "one"}, {"key", "two"}}, {{"unrelated", "yes"}}
+    };
+    for (const auto& tag_set : tag_sets) {
+        osmium::memory::Buffer buffer{1024};
+        const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tags(tag_set));
+        const auto& tags = buffer.get<osmium::Node>(offset).tags();
+        REQUIRE(filter.matches(tags, context) == expression.matches(tags));
     }
 }

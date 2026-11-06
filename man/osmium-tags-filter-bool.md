@@ -187,6 +187,9 @@ expressions.
 Results for empty tag lists are precomputed, including logical NOT. Filters
 consisting entirely of ORed atomic predicates use a single traversal of the
 tag list; general Boolean expressions retain short-circuit evaluation.
+Identical decoded predicates share matchers. In general Boolean expressions,
+each evaluated predicate scans an object's tags at most once per filter match;
+later visits reuse its cached result without evaluating skipped branches.
 
 Reference completion retains object-ID tables in memory. With **-R**, matching
 streams over the input without retaining these IDs. Compiled expressions and
