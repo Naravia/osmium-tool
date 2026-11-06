@@ -116,3 +116,7 @@ tag keys. **Tests and pipelines are not run**, preserving the earlier user
 restriction. Benchmark output equivalence is not full regression validation,
 and these timings do not establish performance for other selectors, datasets,
 thread counts, or reference-completion modes.
+
+Subsequent, specifically requested reference-completion checks are recorded
+separately in [`reference-validation.md`](reference-validation.md). Those
+focused checks do not change the historical test/benchmark scope above.
