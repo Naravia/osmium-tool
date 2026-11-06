@@ -25,6 +25,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../exception.hpp"
 #include "../util.hpp"
 
+#include <osmium/tags/taglist.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <string>
@@ -266,6 +268,31 @@ namespace tags_filter_bool {
 
     Expression::Expression(const std::string& source) {
         ExpressionParser{source, *this}.parse();
+        m_matches_empty = evaluate_empty(m_root);
+        m_is_atomic_or = std::all_of(m_nodes.begin(), m_nodes.end(), [](const Node& node) {
+            return node.operation == Operation::predicate || node.operation == Operation::any;
+        });
+    }
+
+    bool Expression::evaluate_empty(std::size_t index) const noexcept {
+        const auto& node = m_nodes[index];
+        switch (node.operation) {
+            case Operation::predicate:
+                // Even value inequality requires an existing tag. Logical NOT
+                // is handled separately below and can match an untagged object.
+                return false;
+            case Operation::all:
+                return std::all_of(node.children.begin(), node.children.end(), [&](std::size_t child) {
+                    return evaluate_empty(child);
+                });
+            case Operation::any:
+                return std::any_of(node.children.begin(), node.children.end(), [&](std::size_t child) {
+                    return evaluate_empty(child);
+                });
+            case Operation::negate:
+                return !evaluate_empty(node.children.front());
+        }
+        return false;
     }
 
     bool Expression::evaluate(std::size_t index, const osmium::TagList& tags) const noexcept {
@@ -293,9 +320,33 @@ namespace tags_filter_bool {
         return false;
     }
 
+    void Filter::add(const Expression& expression) {
+        m_expressions.push_back(expression);
+        m_matches_empty = m_matches_empty || expression.m_matches_empty;
+        if (m_use_atomic_or) {
+            if (expression.m_is_atomic_or) {
+                // The parser stores leaves in source order. For an OR-only
+                // tree, testing them tag-major has the same existential result.
+                for (const auto& matcher : expression.m_matchers) {
+                    m_atomic_filter.add_rule(true, matcher);
+                }
+            } else {
+                m_use_atomic_or = false;
+                m_atomic_filter = osmium::TagsFilter{};
+            }
+        }
+    }
+
     bool Filter::matches(const osmium::TagList& tags) const noexcept {
+        if (tags.empty() || empty()) {
+            return m_matches_empty;
+        }
+        if (m_use_atomic_or) {
+            return osmium::tags::match_any_of(tags, m_atomic_filter);
+        }
         return std::any_of(m_expressions.begin(), m_expressions.end(), [&](const Expression& expression) {
-            return expression.matches(tags);
+            // Empty tags were handled above for the entire filter.
+            return expression.evaluate(expression.m_root, tags);
         });
     }
 

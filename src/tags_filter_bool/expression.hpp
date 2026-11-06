@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <osmium/osm/entity_bits.hpp>
 #include <osmium/osm/tag.hpp>
 #include <osmium/tags/matcher.hpp>
+#include <osmium/tags/tags_filter.hpp>
 
 #include <cstddef>
 #include <string>
@@ -40,6 +41,7 @@ namespace tags_filter_bool {
     class Expression {
 
         friend class ExpressionParser;
+        friend class Filter;
 
         enum class Operation {
             predicate,
@@ -58,8 +60,11 @@ namespace tags_filter_bool {
         std::vector<osmium::TagMatcher> m_matchers;
         std::vector<Node> m_nodes;
         std::size_t m_root = 0;
+        bool m_matches_empty = false;
+        bool m_is_atomic_or = false;
 
         bool evaluate(std::size_t index, const osmium::TagList& tags) const noexcept;
+        bool evaluate_empty(std::size_t index) const noexcept;
 
     public:
 
@@ -70,7 +75,7 @@ namespace tags_filter_bool {
         }
 
         bool matches(const osmium::TagList& tags) const noexcept {
-            return evaluate(m_root, tags);
+            return tags.empty() ? m_matches_empty : evaluate(m_root, tags);
         }
 
     }; // class Expression
@@ -78,12 +83,13 @@ namespace tags_filter_bool {
     class Filter {
 
         std::vector<Expression> m_expressions;
+        osmium::TagsFilter m_atomic_filter;
+        bool m_matches_empty = false;
+        bool m_use_atomic_or = true;
 
     public:
 
-        void add(const Expression& expression) {
-            m_expressions.push_back(expression);
-        }
+        void add(const Expression& expression);
 
         bool empty() const noexcept {
             return m_expressions.empty();

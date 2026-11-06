@@ -245,3 +245,87 @@ TEST_CASE("Boolean filter alternatives are ORed", "[tags-filter-bool]") {
     filter.add(tags_filter_bool::Expression{"b AND NOT a"});
     REQUIRE(filter.matches(tags));
 }
+
+TEST_CASE("Boolean filters cache empty-tag results without losing negation semantics", "[tags-filter-bool]") {
+    osmium::memory::Buffer buffer{1024};
+    const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_id(1));
+    const auto& tags = buffer.get<osmium::Node>(offset).tags();
+    const std::vector<std::pair<std::string, bool>> cases{
+        {"key", false}, {"key=", false}, {"key!=", false}, {"key!=value", false},
+        {"*", false}, {"key OR other", false}, {"NOT key", true},
+        {"NOT key=value", true}, {"NOT NOT key", false},
+        {"NOT (key OR other)", true}, {"NOT key AND NOT other", true},
+        {"NOT key AND other", false}, {"NOT (key AND NOT other)", true}
+    };
+    for (const auto& entry : cases) {
+        INFO(entry.first);
+        const tags_filter_bool::Expression expression{entry.first};
+        tags_filter_bool::Filter filter;
+        REQUIRE_FALSE(filter.matches(tags));
+        filter.add(expression);
+        REQUIRE(expression.matches(tags) == entry.second);
+        REQUIRE(filter.matches(tags) == entry.second);
+        filter.add(tags_filter_bool::Expression{"missing"});
+        REQUIRE(filter.matches(tags) == entry.second);
+        filter.add(tags_filter_bool::Expression{"NOT missing"});
+        REQUIRE(filter.matches(tags));
+    }
+}
+
+TEST_CASE("Atomic-OR filters agree with expression evaluation", "[tags-filter-bool]") {
+    const std::vector<std::string> sources{
+        "key", "key!=", "key!=one", "key=", "*", "key=one OR key=two",
+        "key=one OR (other OR key=two)", "key=one,three OR name,name:de!=",
+        "addr:* OR name=*Paris", "name='Rock AND Roll' OR key=two"
+    };
+    const std::vector<std::vector<std::pair<std::string, std::string>>> tag_sets{
+        {}, {{"key", ""}}, {{"key", "one"}}, {{"key", "two"}},
+        {{"key", "one"}, {"key", "two"}}, {{"unrelated", "yes"}},
+        {{"name:de", "Berlin"}}, {{"addr:city", "Paris"}},
+        {{"name", "East Paris"}}, {{"name", "Rock AND Roll"}}
+    };
+    for (const auto& source : sources) {
+        INFO(source);
+        const tags_filter_bool::Expression expression{source};
+        tags_filter_bool::Filter filter;
+        filter.add(expression);
+        // Repeated rules must not change the existential result.
+        filter.add(expression);
+        const auto copied = filter;
+        for (const auto& tag_set : tag_sets) {
+            osmium::memory::Buffer buffer{1024};
+            const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tags(tag_set));
+            const auto& tags = buffer.get<osmium::Node>(offset).tags();
+            REQUIRE(filter.matches(tags) == expression.matches(tags));
+            REQUIRE(copied.matches(tags) == expression.matches(tags));
+        }
+    }
+}
+
+TEST_CASE("Adding mixed expressions switches atomic-OR filters to general evaluation", "[tags-filter-bool]") {
+    const tags_filter_bool::Expression atomic{"a OR b"};
+    const tags_filter_bool::Expression conjunction{"c AND d"};
+    const tags_filter_bool::Expression negation{"NOT e"};
+    const tags_filter_bool::Expression later_atomic{"f"};
+    tags_filter_bool::Filter filter;
+    filter.add(atomic);
+    filter.add(conjunction);
+    filter.add(negation);
+    filter.add(later_atomic);
+    const auto copied = filter;
+    for (unsigned int assignment = 0; assignment < 64; ++assignment) {
+        std::vector<std::pair<std::string, std::string>> tags;
+        for (unsigned int variable = 0; variable < 6; ++variable) {
+            if ((assignment & (1U << variable)) != 0) {
+                tags.emplace_back(std::string(1, static_cast<char>('a' + variable)), "yes");
+            }
+        }
+        osmium::memory::Buffer buffer{1024};
+        const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tags(tags));
+        const auto& tag_list = buffer.get<osmium::Node>(offset).tags();
+        const bool expected = (assignment & 3U) != 0 || (assignment & 12U) == 12U ||
+                              (assignment & 16U) == 0 || (assignment & 32U) != 0;
+        REQUIRE(filter.matches(tag_list) == expected);
+        REQUIRE(copied.matches(tag_list) == expected);
+    }
+}

@@ -22,6 +22,21 @@ when only node expressions were supplied. Inversion selects otherwise
 unscoped ways too, and those ways must include their nodes. The original
 command is not changed.
 
+## Matching optimisations
+
+Each expression caches its result for an empty tag list at construction;
+each filter caches the OR of those results. Empty-tag matching therefore
+does not depend on expression count, including when NOT selects untagged
+objects. Value inequality still requires an existing tag.
+
+Filters containing only atomic predicates and OR nodes also compile an
+`osmium::TagsFilter` using the existing libosmium API. Matching walks the
+tags once rather than restarting a tag scan for every predicate. Adding
+an AND/NOT expression switches the entire filter back to the original
+left-to-right short-circuit evaluator and releases the compiled rules.
+Node, way, relation, and area filters maintain these plans independently.
+Neither path allocates during matching or changes reference traversal.
+
 ## Updating upstream
 
 1. Rebase the feature branch onto the desired upstream version. Integration

@@ -184,6 +184,10 @@ the number of tags on an object. Put inexpensive, likely-to-fail conditions
 early in AND expressions and likely-to-match alternatives early in OR
 expressions.
 
+Results for empty tag lists are precomputed, including logical NOT. Filters
+consisting entirely of ORed atomic predicates use a single traversal of the
+tag list; general Boolean expressions retain short-circuit evaluation.
+
 Reference completion retains object-ID tables in memory. With **-R**, matching
 streams over the input without retaining these IDs. Compiled expressions and
 normal I/O buffers are still kept in memory.
