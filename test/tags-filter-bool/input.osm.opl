@@ -1,0 +1,20 @@
+n1 v1 dV c0 t i0 u Tkey1=value1,key2=value2,key3=yes x1 y1
+n2 v1 dV c0 t i0 u Tkey1=value1,key2=value2,key4=yes x2 y1
+n3 v1 dV c0 t i0 u Tkey1=value1,key2=value2,key3= x3 y1
+n4 v1 dV c0 t i0 u Tkey1=value1,key3=yes x4 y1
+n5 v1 dV c0 t i0 u Tkey1=wrong,key2=value2,key4=yes x5 y1
+n6 v1 dV c0 t i0 u T x6 y1
+n7 v1 dV c0 t i0 u Tkey1=value1,key2=value2,key3=,key4= x7 y1
+n8 v1 dV c0 t i0 u Tname=Rock%20%AND%20%Roll%20%(%23%1) x8 y1
+n9 v1 dV c0 t i0 u Tname=%23%literal x9 y1
+w10 v1 dV c0 t i0 u Tkey1=value1,key2=value2,key3=yes,building=yes Nn1,n2,n3,n1
+w11 v1 dV c0 t i0 u Tbuilding=yes Nn3,n4
+w12 v1 dV c0 t i0 u Tkey1=value1,key2=value2,key4=yes Nn4,n5,n6
+w13 v1 dV c0 t i0 u Tbuilding=yes Nn1,n1
+w14 v1 dV c0 t i0 u Tbuilding=yes Nn3,n4,n5,n3
+r20 v1 dV c0 t i0 u Ttype=multipolygon,building=yes,key1=value1,key2=value2,key3=yes Mw11@outer,n6@label
+r21 v1 dV c0 t i0 u Ttype=boundary,building=yes Mw14@outer
+r22 v1 dV c0 t i0 u Ttype=route,building=yes,key1=value1,key2=value2,key4=yes Mw12@
+r23 v1 dV c0 t i0 u Ttype=site,group=yes Mr20@
+r24 v1 dV c0 t i0 u Ttype=site,group=yes,cycle=yes Mr23@,r25@
+r25 v1 dV c0 t i0 u Ttype=site Mr24@

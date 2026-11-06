@@ -253,6 +253,7 @@ SET(OSMIUM_COMMANDS
     sort
     tags-count
     tags-filter
+    tags-filter-bool
     time-filter
 )
 
@@ -262,6 +263,7 @@ set(OSMIUM_SOURCE_FILES
     id_file.cpp
     io.cpp
     util.cpp
+    tags_filter_bool/expression.cpp
     command_help.cpp
     option_clean.cpp
     export/export_format_json.cpp

@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Add the standalone `tags-filter-bool` command for Boolean tag expressions
+  with AND, OR, NOT, and parentheses. The existing `tags-filter` is unchanged.
+
 ### Changed
 
 ### Fixed

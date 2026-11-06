@@ -1,0 +1,247 @@
+
+#include "test.hpp" // IWYU pragma: keep
+
+#include "tags_filter_bool/expression.hpp"
+
+#include <osmium/builder/attr.hpp>
+#include <osmium/memory/buffer.hpp>
+#include <osmium/osm/entity_bits.hpp>
+#include <osmium/osm/node.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <random>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace {
+
+bool matches(const std::string& source, const osmium::builder::attr::tag_ilist& tags = {}) {
+    osmium::memory::Buffer buffer{1024, osmium::memory::Buffer::auto_grow::yes};
+    const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tags(tags));
+    return tags_filter_bool::Expression{source}.matches(buffer.get<osmium::Node>(offset).tags());
+}
+
+struct BooleanFormula {
+    std::string source;
+    std::uint32_t truth_table;
+};
+
+BooleanFormula generate_formula(std::mt19937& random, unsigned int depth) {
+    const auto operation = depth == 0 ? 0 : random() % 4;
+    if (operation == 0) {
+        const auto variable = random() % 5;
+        std::uint32_t truth_table = 0;
+        for (unsigned int assignment = 0; assignment < 32; ++assignment) {
+            if ((assignment & (1U << variable)) != 0) {
+                truth_table |= std::uint32_t{1} << assignment;
+            }
+        }
+        return {std::string(1, static_cast<char>('a' + variable)), truth_table};
+    }
+    const auto left = generate_formula(random, depth - 1);
+    if (operation == 1) {
+        return {"NOT (" + left.source + ")", ~left.truth_table};
+    }
+    const auto right = generate_formula(random, depth - 1);
+    if (operation == 2) {
+        return {"(" + left.source + " AND " + right.source + ")", left.truth_table & right.truth_table};
+    }
+    return {"(" + left.source + " OR " + right.source + ")", left.truth_table | right.truth_table};
+}
+
+} // anonymous namespace
+
+TEST_CASE("Boolean tag predicates match across distinct tags", "[tags-filter-bool]") {
+    const std::string source{"key1=value1 AND key2=value2 AND (key3!= OR key4!=)"};
+    REQUIRE(matches(source, {{"key1", "value1"}, {"key2", "value2"}, {"key3", "yes"}}));
+    REQUIRE(matches(source, {{"key1", "value1"}, {"key2", "value2"}, {"key3", ""}, {"key4", "yes"}}));
+    REQUIRE_FALSE(matches(source, {{"key1", "value1"}, {"key2", "value2"}, {"key3", ""}}));
+    REQUIRE_FALSE(matches(source, {{"key1", "value1"}, {"key3", "yes"}}));
+    REQUIRE_FALSE(matches(source, {{"key1", "wrong"}, {"key2", "value2"}, {"key4", "yes"}}));
+}
+
+TEST_CASE("Boolean operators obey precedence and grouping", "[tags-filter-bool]") {
+    for (unsigned int bits = 0; bits < 8; ++bits) {
+        std::vector<std::pair<std::string, std::string>> tags;
+        for (unsigned int i = 0; i < 3; ++i) {
+            if ((bits & (1U << i)) != 0) {
+                tags.emplace_back(std::string(1, static_cast<char>('a' + i)), "yes");
+            }
+        }
+        osmium::memory::Buffer buffer{1024};
+        const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tags(tags));
+        const auto& tag_list = buffer.get<osmium::Node>(offset).tags();
+        const bool a = (bits & 1U) != 0;
+        const bool b = (bits & 2U) != 0;
+        const bool c = (bits & 4U) != 0;
+        REQUIRE(tags_filter_bool::Expression{"a OR b AND c"}.matches(tag_list) == (a || (b && c)));
+        REQUIRE(tags_filter_bool::Expression{"(a OR b) AND c"}.matches(tag_list) == ((a || b) && c));
+        REQUIRE(tags_filter_bool::Expression{"NOT a AND b OR c"}.matches(tag_list) == ((!a && b) || c));
+        REQUIRE(tags_filter_bool::Expression{"NOT (a OR NOT (b AND c))"}.matches(tag_list) == !(a || !(b && c)));
+        REQUIRE(tags_filter_bool::Expression{"NOT NOT a"}.matches(tag_list) == a);
+    }
+}
+
+TEST_CASE("Boolean missing and empty value semantics", "[tags-filter-bool]") {
+    REQUIRE_FALSE(matches("key"));
+    REQUIRE_FALSE(matches("key="));
+    REQUIRE_FALSE(matches("key!="));
+    REQUIRE_FALSE(matches("key!=value"));
+    REQUIRE(matches("NOT key"));
+    REQUIRE(matches("NOT key=value"));
+
+    REQUIRE(matches("key", {{"key", ""}}));
+    REQUIRE(matches("key=", {{"key", ""}}));
+    REQUIRE_FALSE(matches("key!=", {{"key", ""}}));
+    REQUIRE_FALSE(matches("NOT key", {{"key", ""}}));
+
+    REQUIRE(matches("key", {{"key", "value"}}));
+    REQUIRE_FALSE(matches("key=", {{"key", "value"}}));
+    REQUIRE(matches("key!=", {{"key", "value"}}));
+    REQUIRE(matches("key!=", {{"key", " "}}));
+    REQUIRE_FALSE(matches("NOT key", {{"key", "value"}}));
+
+    // Each leaf retains existential TagMatcher semantics, even for duplicate keys.
+    REQUIRE(matches("key=one AND key=two", {{"key", "one"}, {"key", "two"}}));
+    REQUIRE_FALSE(matches("NOT key=one", {{"key", "one"}, {"key", "two"}}));
+    REQUIRE(matches("key!=one", {{"key", "one"}, {"key", "two"}}));
+}
+
+TEST_CASE("Generated Boolean expressions agree with independent truth tables", "[tags-filter-bool]") {
+    std::vector<osmium::memory::Buffer> buffers;
+    for (unsigned int assignment = 0; assignment < 32; ++assignment) {
+        std::vector<std::pair<std::string, std::string>> tags;
+        for (unsigned int variable = 0; variable < 5; ++variable) {
+            if ((assignment & (1U << variable)) != 0) {
+                tags.emplace_back(std::string(1, static_cast<char>('a' + variable)), "yes");
+            }
+        }
+        buffers.emplace_back(1024);
+        osmium::builder::add_node(buffers.back(), osmium::builder::attr::_tags(tags));
+    }
+    std::mt19937 random{12345};
+    for (unsigned int i = 0; i < 100; ++i) {
+        const auto formula = generate_formula(random, 6);
+        const tags_filter_bool::Expression expression{formula.source};
+        for (unsigned int assignment = 0; assignment < 32; ++assignment) {
+            INFO(formula.source);
+            const bool expected = (formula.truth_table & (std::uint32_t{1} << assignment)) != 0;
+            REQUIRE(expression.matches(buffers[assignment].get<osmium::Node>(0).tags()) == expected);
+        }
+    }
+}
+
+TEST_CASE("Boolean leaves retain existing matcher syntax", "[tags-filter-bool]") {
+    REQUIRE(matches("highway=primary,secondary AND name,name:de!=", {{"highway", "secondary"}, {"name:de", "Berlin"}}));
+    REQUIRE(matches("addr:* AND name=*Paris", {{"addr:city", "Paris"}, {"name", "East Paris"}}));
+    REQUIRE(matches("name=New York AND building", {{"name", "New York"}, {"building", "yes"}}));
+    REQUIRE(matches(" key = value \t AND\n other ", {{"key", "value"}, {"other", ""}}));
+    REQUIRE(matches("*", {{"anything", ""}}));
+    REQUIRE_FALSE(matches("*"));
+    REQUIRE_FALSE(matches("Key=value", {{"key", "value"}}));
+    REQUIRE(matches("name=AND", {{"name", "AND"}}));
+    REQUIRE(matches("name=and or not", {{"name", "and or not"}}));
+}
+
+TEST_CASE("Boolean quoting and escapes protect tokenizer delimiters", "[tags-filter-bool]") {
+    REQUIRE(matches("name=\"Rock AND Roll\" AND building", {{"name", "Rock AND Roll"}, {"building", "yes"}}));
+    REQUIRE(matches("name='Cafe (West)'", {{"name", "Cafe (West)"}}));
+    REQUIRE(matches("\"AND\"", {{"AND", "yes"}}));
+    REQUIRE(matches("\\AND", {{"AND", "yes"}}));
+    REQUIRE(matches("name=Cafe\\(West\\)", {{"name", "Cafe(West)"}}));
+    REQUIRE(matches("name=\"A \\\"B\\\"\"", {{"name", "A \"B\""}}));
+    REQUIRE(matches("name='O\\'Brien'", {{"name", "O'Brien"}}));
+    REQUIRE(matches("name=C:\\\\data", {{"name", "C:\\data"}}));
+    REQUIRE(matches("name=\"a,b\"", {{"name", "a"}}));
+    REQUIRE(matches("name=\"x*\"", {{"name", "xyz"}}));
+    REQUIRE(matches("\"a/b\"", {{"a/b", "yes"}}));
+    REQUIRE(matches("website=https://example.com/a AND name", {{"website", "https://example.com/a"}, {"name", "yes"}}));
+    REQUIRE(matches("name=#literal", {{"name", "#literal"}}));
+}
+
+TEST_CASE("Boolean scopes apply to complete expressions", "[tags-filter-bool]") {
+    using osmium::osm_entity_bits::nwr;
+    REQUIRE(tags_filter_bool::Expression{"NOT name"}.entities() == nwr);
+    REQUIRE(tags_filter_bool::Expression{"/NOT name"}.entities() == nwr);
+    REQUIRE(tags_filter_bool::Expression{" nw/(a OR b) "}.entities() == (osmium::osm_entity_bits::node | osmium::osm_entity_bits::way));
+    REQUIRE(tags_filter_bool::Expression{"a/NOT name"}.entities() == osmium::osm_entity_bits::area);
+    REQUIRE(tags_filter_bool::Expression{"r/type=multipolygon"}.entities() == osmium::osm_entity_bits::relation);
+    REQUIRE(tags_filter_bool::Expression{"website=https://example.com"}.entities() == nwr);
+    REQUIRE(tags_filter_bool::Expression{"'a/b'"}.entities() == nwr);
+    REQUIRE_THROWS_AS(tags_filter_bool::Expression{"x/name"}, argument_error);
+}
+
+TEST_CASE("Boolean syntax errors include source columns", "[tags-filter-bool]") {
+    const std::vector<std::string> invalid{
+        "", " \t\r", "n/", "()", "a AND", "OR a", "NOT", "a OR OR b",
+        "(a", "a)", "a (b)", "a NOT b", "a AND ()", "name='unclosed", "name=unfinished\\", "''"
+    };
+    for (const auto& source : invalid) {
+        INFO(source);
+        try {
+            const tags_filter_bool::Expression expression{source};
+            FAIL("Expected a syntax error");
+        } catch (const argument_error& e) {
+            REQUIRE(std::string{e.what()}.find("Boolean expression, column ") == 0);
+        }
+    }
+    try {
+        const tags_filter_bool::Expression expression{"a AND"};
+        FAIL("Expected a syntax error");
+    } catch (const argument_error& e) {
+        REQUIRE(std::string{e.what()}.find("column 6:") != std::string::npos);
+    }
+}
+
+TEST_CASE("Boolean expression complexity is bounded", "[tags-filter-bool]") {
+    REQUIRE_THROWS_AS(tags_filter_bool::Expression{std::string(65537, 'a')}, argument_error);
+    REQUIRE(matches(std::string(65536, 'a')) == false);
+    REQUIRE_THROWS_AS(tags_filter_bool::Expression{std::string(129, '(') + "a" + std::string(129, ')')}, argument_error);
+    REQUIRE(matches(std::string(128, '(') + "a" + std::string(128, ')'), {{"a", "yes"}}));
+    std::string negations;
+    for (std::size_t i = 0; i < 129; ++i) {
+        negations += "NOT ";
+    }
+    REQUIRE_THROWS_AS(tags_filter_bool::Expression{negations + "a"}, argument_error);
+
+    std::string chain{"a"};
+    for (std::size_t i = 1; i < 4095; ++i) {
+        chain += " OR a";
+    }
+    REQUIRE(matches(chain, {{"a", "yes"}}));
+    REQUIRE_FALSE(matches(chain));
+    chain += " OR a";
+    REQUIRE_THROWS_AS(tags_filter_bool::Expression{chain}, argument_error);
+
+    std::string conjunction{"a"};
+    for (std::size_t i = 1; i < 4095; ++i) {
+        conjunction += " AND a";
+    }
+    REQUIRE(matches(conjunction, {{"a", "yes"}}));
+}
+
+TEST_CASE("Boolean expression-file comments respect quotes and escapes", "[tags-filter-bool]") {
+    REQUIRE(tags_filter_bool::strip_comment("a AND b # comment") == "a AND b ");
+    REQUIRE(tags_filter_bool::strip_comment("name='#one' # comment") == "name='#one' ");
+    REQUIRE(tags_filter_bool::strip_comment("name=\"#one\" # comment") == "name=\"#one\" ");
+    REQUIRE(tags_filter_bool::strip_comment("name=\\#one # comment") == "name=\\#one ");
+    REQUIRE(tags_filter_bool::strip_comment("name=\"escaped\\\"#one\" # comment") == "name=\"escaped\\\"#one\" ");
+    REQUIRE(tags_filter_bool::strip_comment("name=\\\\#comment") == "name=\\\\");
+    REQUIRE(tags_filter_bool::strip_comment("# comment").empty());
+}
+
+TEST_CASE("Boolean filter alternatives are ORed", "[tags-filter-bool]") {
+    osmium::memory::Buffer buffer{1024};
+    const auto offset = osmium::builder::add_node(buffer, osmium::builder::attr::_tag("b", "yes"));
+    const auto& tags = buffer.get<osmium::Node>(offset).tags();
+    tags_filter_bool::Filter filter;
+    REQUIRE(filter.empty());
+    REQUIRE_FALSE(filter.matches(tags));
+    filter.add(tags_filter_bool::Expression{"a"});
+    REQUIRE_FALSE(filter.empty());
+    REQUIRE_FALSE(filter.matches(tags));
+    filter.add(tags_filter_bool::Expression{"b AND NOT a"});
+    REQUIRE(filter.matches(tags));
+}

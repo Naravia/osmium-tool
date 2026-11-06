@@ -1,0 +1,6 @@
+# Each line is a complete Boolean expression. Lines are ORed.
+
+
+n/(key1=value1 AND key2=value2 AND (key3!= OR key4!=)) # two nodes
+n/name="Rock AND Roll (#1)" # the quoted # is not a comment
+n/name=\#literal # the escaped # is not a comment

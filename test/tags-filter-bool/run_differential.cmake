@@ -1,0 +1,37 @@
+# Compare full output, including metadata, tags, references, and ordering.
+foreach(input tags-filter/input.osm tags-filter/input-site.osm tags-filter-bool/input.osm.opl)
+    foreach(expression amenity w/highway note r/site a/building n/key1 key3!= name=*literal)
+        foreach(mode normal omit strip invert invert-omit invert-strip)
+            set(flags)
+            if(mode MATCHES "^invert")
+                list(APPEND flags -i)
+            endif()
+            if(mode MATCHES "omit$")
+                list(APPEND flags -R)
+            elseif(mode MATCHES "strip$")
+                list(APPEND flags -t)
+            endif()
+            foreach(command tags-filter tags-filter-bool)
+                execute_process(COMMAND "${osmium}" "${command}" ${flags} "${source}/${input}" "${expression}"
+                    --generator=test --output-header=xml_josm_upload=false -f osm
+                    OUTPUT_VARIABLE output ERROR_VARIABLE error RESULT_VARIABLE result)
+                if(NOT result EQUAL 0 OR NOT error STREQUAL "")
+                    message(FATAL_ERROR "${command} failed: ${error}")
+                endif()
+                if(command STREQUAL "tags-filter")
+                    set(reference "${output}")
+                elseif(NOT output STREQUAL reference)
+                    message(FATAL_ERROR "Commands disagree: ${input}, ${expression}, ${mode}\n${output}\nExpected:\n${reference}")
+                endif()
+            endforeach()
+        endforeach()
+    endforeach()
+endforeach()
+
+execute_process(COMMAND "${osmium}" tags-filter "${source}/tags-filter/input.osm" note highway -f opl
+    OUTPUT_VARIABLE reference RESULT_VARIABLE result)
+execute_process(COMMAND "${osmium}" tags-filter-bool "${source}/tags-filter/input.osm" "note OR highway" -f opl
+    OUTPUT_VARIABLE output RESULT_VARIABLE bool_result)
+if(NOT result EQUAL 0 OR NOT bool_result EQUAL 0 OR NOT output STREQUAL reference)
+    message(FATAL_ERROR "Boolean OR differs from separate legacy alternatives")
+endif()

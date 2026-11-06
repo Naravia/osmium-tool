@@ -22,6 +22,7 @@ set(OSMIUM_INSTALL_FILES
     share/man/man1/osmium-sort.1
     share/man/man1/osmium-tags-count.1
     share/man/man1/osmium-tags-filter.1
+    share/man/man1/osmium-tags-filter-bool.1
     share/man/man1/osmium-time-filter.1
     share/man/man1/osmium.1
     share/man/man5/osmium-file-formats.5

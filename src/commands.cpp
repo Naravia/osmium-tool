@@ -24,6 +24,7 @@
 #include "command_sort.hpp"
 #include "command_tags_count.hpp"
 #include "command_tags_filter.hpp"
+#include "command_tags_filter_bool.hpp"
 #include "command_time_filter.hpp"
 
 void register_commands(CommandFactory& cmd_factory) {
@@ -116,6 +117,10 @@ void register_commands(CommandFactory& cmd_factory) {
 
     cmd_factory.register_command("tags-filter", "Filter OSM data based on tags", [&]() {
         return std::make_unique<CommandTagsFilter>(cmd_factory);
+    });
+
+    cmd_factory.register_command("tags-filter-bool", "Filter OSM data using Boolean tag expressions", [&]() {
+        return std::make_unique<CommandTagsFilterBool>(cmd_factory);
     });
 
     cmd_factory.register_command("time-filter", "Filter OSM data from a point in time or a time span out of a history file", [&]() {

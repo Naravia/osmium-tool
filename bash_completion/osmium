@@ -11,7 +11,7 @@
 _osmium_commands="add-locations-to-ways apply-changes cat changeset-filter
 check-refs create-locations-index derive-changes diff export extract fileinfo
 getid getparents help merge merge-changes query-locations-index removeid
-renumber show sort tags-count tags-filter time-filter"
+renumber show sort tags-count tags-filter tags-filter-bool time-filter"
 
 _osmium_help_topics="$_osmium_commands file-formats index-types"
 
@@ -118,6 +118,8 @@ __osmium_opts()
             echo "$common $input $progress -e --expressions -m --min-count -M --max-count -s --sort -t --object-type -o --output -O --overwrite";;
         tags-filter)
             echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced";;
+        tags-filter-bool)
+            echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced -t --remove-tags";;
         time-filter)
             echo "$common $input $outfmt $output $progress";;
     esac
@@ -284,7 +286,7 @@ __osmium_complete_arg()
             return 0;;
         -e)
             case $cmd in
-                tags-count|tags-filter)
+                tags-count|tags-filter|tags-filter-bool)
                     __osmium_filedir
                     return 0;;
             esac

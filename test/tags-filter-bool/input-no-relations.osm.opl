@@ -1,0 +1,4 @@
+n1 v1 dV c0 t i0 u Tnote=referenced x1 y1
+n2 v1 dV c0 t i0 u T x2 y1
+n3 v1 dV c0 t i0 u Tnote=excluded x3 y1
+w1 v1 dV c0 t i0 u T Nn1,n2
