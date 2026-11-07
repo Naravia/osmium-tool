@@ -1,0 +1,341 @@
+{
+  "source": {
+    "path": "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+    "sha256": "c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111",
+    "bytes": 296211267
+  },
+  "seeds": {
+    "path": "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+    "sha256": "b111351ec75fdc9c3a1f9210c83cccfe1be4fba5a825d63dd8826959e0f666bf",
+    "bytes": 3488658
+  },
+  "baseline": {
+    "path": "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+    "sha256": "1670a21071f7d055354a426991966e2ddcfd0397777cc7ac0580f1e7d8e95fab",
+    "bytes": 2935200
+  },
+  "binary": {
+    "path": "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+    "sha256": "1ed7000989b90647176dcff2842c68144d42e9056138df51814327147f4c327d",
+    "bytes": 3018016
+  },
+  "steps": [
+    {
+      "label": "standalone parents and edges",
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "get-parents-extended",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-parent-command-validation/parents.tsv",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/parents.osm.pbf"
+      ],
+      "seconds": 4.1819623310584575,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "original classic filter parent predicate oracle",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "tags-filter",
+        "/tmp/opencode/osmium-parent-command-validation/parents.osm.pbf",
+        "r/type=multipolygon",
+        "-R",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/multipolygon-oracle.osm.pbf"
+      ],
+      "seconds": 0.09624773706309497,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "standalone filtered parents",
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "get-parents-extended",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+        "--parents-expression=r/type=multipolygon",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-parent-command-validation/multipolygon-parents.tsv",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/multipolygon-parents.osm.pbf"
+      ],
+      "seconds": 2.582641621120274,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "omit original getid composition",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "getid",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-parent-command-validation/multipolygon-oracle.osm.pbf",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/omit-composed.osm.pbf"
+      ],
+      "seconds": 7.484883615979925,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "omit integrated parent selection",
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-parent-command-validation/omit-integrated.tsv",
+        "-R",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/omit-integrated.osm.pbf"
+      ],
+      "seconds": 41.712233546888456,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": "[ 0:00] Reading expressions file...\n[ 0:00] Started osmium tags-filter-bool\n[ 0:00]   osmium version 1.19.1\n[ 0:00]   libosmium version 2.23.1\n[ 0:00] Command line options and default settings:\n[ 0:00]   input options:\n[ 0:00]     file name: /mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf\n[ 0:00]     file format: \n[ 0:00]   output options:\n[ 0:00]     file name: /tmp/opencode/osmium-parent-command-validation/omit-integrated.osm.pbf\n[ 0:00]     file format: \n[ 0:00]     generator: reverse-reference-exploration\n[ 0:00]     overwrite: no\n[ 0:00]     fsync: no\n[ 0:00]   other options:\n[ 0:00]     add referenced objects: no\n[ 0:00]     invert match: no\n[ 0:00]     include direct parents: yes\n[ 0:00]   looking for tags...\n[ 0:00]     on nodes: yes\n[ 0:00]     on ways: yes\n[ 0:00]     on relations: yes\n[ 0:00] Collecting original matching IDs for parent lookup...\n[ 0:34] Finding direct parents of the frozen original matches...\n[ 0:36] Opening output file...\n[ 0:36] Opening input file...\n[ 0:36] Copying matching objects to output file...\n[ 0:42] Closing output file...\n[ 0:42] Closing input file...\n[ 0:42] Peak memory used: 363 MBytes\n[ 0:42] Needed 3 pass(es) through the input file.\n[ 0:42] Done.\n"
+    },
+    {
+      "label": "normal original getid composition",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "getid",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-parent-command-validation/multipolygon-oracle.osm.pbf",
+        "-r",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/normal-composed.osm.pbf"
+      ],
+      "seconds": 16.757998443907127,
+      "return_code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "normal integrated parent selection",
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-parent-command-validation/normal-integrated.tsv",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/normal-integrated.osm.pbf"
+      ],
+      "seconds": 51.85004573385231,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": "[ 0:00] Reading expressions file...\n[ 0:00] Started osmium tags-filter-bool\n[ 0:00]   osmium version 1.19.1\n[ 0:00]   libosmium version 2.23.1\n[ 0:00] Command line options and default settings:\n[ 0:00]   input options:\n[ 0:00]     file name: /mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf\n[ 0:00]     file format: \n[ 0:00]   output options:\n[ 0:00]     file name: /tmp/opencode/osmium-parent-command-validation/normal-integrated.osm.pbf\n[ 0:00]     file format: \n[ 0:00]     generator: reverse-reference-exploration\n[ 0:00]     overwrite: no\n[ 0:00]     fsync: no\n[ 0:00]   other options:\n[ 0:00]     add referenced objects: yes\n[ 0:00]     invert match: no\n[ 0:00]     include direct parents: yes\n[ 0:00]     remove tags on non-matching objects: no\n[ 0:00]   looking for tags...\n[ 0:00]     on nodes: yes\n[ 0:00]     on ways: yes\n[ 0:00]     on relations: yes\n[ 0:00] Collecting original matching IDs for parent lookup...\n[ 0:33] Finding direct parents of the frozen original matches...\n[ 0:36] Opening output file...\n[ 0:36] Following references...\n[ 0:36]   Reading input file to find relations in relations...\n[ 0:39]   Reading input file to find nodes/ways in relations...\n[ 0:41]   Reading input file to find nodes in ways...\n[ 0:45] Done following references.\n[ 0:45] Opening input file...\n[ 0:45] Copying matching objects to output file...\n[ 0:51] Closing output file...\n[ 0:51] Closing input file...\n[ 0:51] Peak memory used: 2405 MBytes\n[ 0:51] Needed 6 pass(es) through the input file.\n[ 0:51] Done.\n"
+    },
+    {
+      "label": "strip original getid composition",
+      "command": [
+        "/tmp/opencode/osmium-bool-predicate-cache/improved/osmium",
+        "getid",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-bool-predicate-cache/measurements/improved_bool_compound-1.osm.pbf",
+        "-I",
+        "/tmp/opencode/osmium-parent-command-validation/multipolygon-oracle.osm.pbf",
+        "-r",
+        "-t",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/strip-composed.osm.pbf"
+      ],
+      "seconds": 16.77292511286214,
+      "return_code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "strip integrated parent selection",
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-parent-command-validation/strip-integrated.tsv",
+        "-t",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-parent-command-validation/strip-integrated.osm.pbf"
+      ],
+      "seconds": 51.79681389895268,
+      "return_code": 0,
+      "stdout": "",
+      "stderr": "[ 0:00] Reading expressions file...\n[ 0:00] Started osmium tags-filter-bool\n[ 0:00]   osmium version 1.19.1\n[ 0:00]   libosmium version 2.23.1\n[ 0:00] Command line options and default settings:\n[ 0:00]   input options:\n[ 0:00]     file name: /mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf\n[ 0:00]     file format: \n[ 0:00]   output options:\n[ 0:00]     file name: /tmp/opencode/osmium-parent-command-validation/strip-integrated.osm.pbf\n[ 0:00]     file format: \n[ 0:00]     generator: reverse-reference-exploration\n[ 0:00]     overwrite: no\n[ 0:00]     fsync: no\n[ 0:00]   other options:\n[ 0:00]     add referenced objects: yes\n[ 0:00]     invert match: no\n[ 0:00]     include direct parents: yes\n[ 0:00]     remove tags on non-matching objects: yes\n[ 0:00]   looking for tags...\n[ 0:00]     on nodes: yes\n[ 0:00]     on ways: yes\n[ 0:00]     on relations: yes\n[ 0:00] Collecting original matching IDs for parent lookup...\n[ 0:34] Finding direct parents of the frozen original matches...\n[ 0:37] Opening output file...\n[ 0:37] Following references...\n[ 0:37]   Reading input file to find relations in relations...\n[ 0:39]   Reading input file to find nodes/ways in relations...\n[ 0:42]   Reading input file to find nodes in ways...\n[ 0:46] Done following references.\n[ 0:46] Opening input file...\n[ 0:46] Copying matching objects to output file...\n[ 0:52] Closing output file...\n[ 0:52] Closing input file...\n[ 0:52] Peak memory used: 2341 MBytes\n[ 0:52] Needed 6 pass(es) through the input file.\n[ 0:52] Done.\n"
+    }
+  ],
+  "comparisons": [
+    {
+      "mode": "omit",
+      "expected": {
+        "path": "/tmp/opencode/osmium-parent-command-validation/omit-composed.osm.pbf",
+        "sha256": "04bb8a44d70038edd804202cd22d334fa0c4e251aac1354eda03e8ff9a484dfc",
+        "bytes": 3557538
+      },
+      "actual": {
+        "path": "/tmp/opencode/osmium-parent-command-validation/omit-integrated.osm.pbf",
+        "sha256": "04bb8a44d70038edd804202cd22d334fa0c4e251aac1354eda03e8ff9a484dfc",
+        "bytes": 3557538
+      },
+      "same_output": true,
+      "same_frozen_seed_edges": true,
+      "source_reader_passes": 3
+    },
+    {
+      "mode": "normal",
+      "expected": {
+        "path": "/tmp/opencode/osmium-parent-command-validation/normal-composed.osm.pbf",
+        "sha256": "66aede383ddb8c05d3847ba2912a3afa6f090adcdb2f62aed24ee2222d1bc078",
+        "bytes": 14914674
+      },
+      "actual": {
+        "path": "/tmp/opencode/osmium-parent-command-validation/normal-integrated.osm.pbf",
+        "sha256": "66aede383ddb8c05d3847ba2912a3afa6f090adcdb2f62aed24ee2222d1bc078",
+        "bytes": 14914674
+      },
+      "same_output": true,
+      "same_frozen_seed_edges": true,
+      "source_reader_passes": 6
+    },
+    {
+      "mode": "strip",
+      "expected": {
+        "path": "/tmp/opencode/osmium-parent-command-validation/strip-composed.osm.pbf",
+        "sha256": "ea44a5502a0dcf18708193b43a50484712d7c4fc18a804d3320336bb9ac9defc",
+        "bytes": 14432383
+      },
+      "actual": {
+        "path": "/tmp/opencode/osmium-parent-command-validation/strip-integrated.osm.pbf",
+        "sha256": "ea44a5502a0dcf18708193b43a50484712d7c4fc18a804d3320336bb9ac9defc",
+        "bytes": 14432383
+      },
+      "same_output": true,
+      "same_frozen_seed_edges": true,
+      "source_reader_passes": 6
+    }
+  ],
+  "note": "Single-run correctness validation; getid -r can return 1 for source-missing members; measured binary compiled before recording the implementation commit, with unchanged production source",
+  "standalone_parity": true,
+  "edge_parity": true,
+  "parent_predicate_parity": true,
+  "expressions": {
+    "path": "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+    "sha256": "eec4c4d01d699929b61f4063036b0960ed668d3e4522eece74766229cf605c01",
+    "bytes": 15498
+  },
+  "all_checks_passed": true,
+  "focused_ctest": {
+    "tests": [
+      "help_cmd_get-parents-extended",
+      "get-parents-extended-typed",
+      "get-parents-extended-self",
+      "get-parents-extended-forward",
+      "get-parents-extended-one-hop",
+      "get-parents-extended-filtered",
+      "get-parents-extended-filtered-self",
+      "get-parents-extended-parent-area",
+      "get-parents-extended-parent-or",
+      "get-parents-extended-seed-osm",
+      "get-parents-extended-seed-empty",
+      "get-parents-extended-edges",
+      "get-parents-extended-integrated-R",
+      "get-parents-extended-integrated-way",
+      "get-parents-extended-integrated-node",
+      "get-parents-extended-integrated-node-strip",
+      "get-parents-extended-integrated-relation",
+      "get-parents-extended-integrated-relation-strip",
+      "get-parents-extended-integrated-forward-R",
+      "get-parents-extended-integrated-cycle",
+      "get-parents-extended-integrated-cycle-strip",
+      "get-parents-extended-integrated-parent-filter",
+      "get-parents-extended-integrated-none",
+      "get-parents-extended-integrated-invert",
+      "get-parents-extended-errors",
+      "tags-filter-bool-compound-R",
+      "tags-filter-bool-compound",
+      "tags-filter-bool-compound-t",
+      "tags-filter-bool-nodes",
+      "tags-filter-bool-ways",
+      "tags-filter-bool-missing",
+      "tags-filter-bool-area-R",
+      "tags-filter-bool-area-and-way-scope",
+      "tags-filter-bool-area",
+      "tags-filter-bool-nested",
+      "tags-filter-bool-nested-t",
+      "tags-filter-bool-nested-R",
+      "tags-filter-bool-invert-R",
+      "tags-filter-bool-invert",
+      "tags-filter-bool-invert-t",
+      "tags-filter-bool-file",
+      "tags-filter-bool-file-and-cli",
+      "tags-filter-bool-crlf",
+      "tags-filter-bool-empty-file",
+      "tags-filter-bool-stdin",
+      "tags-filter-bool-alternatives",
+      "tags-filter-bool-invert-node-scope",
+      "tags-filter-bool-invert-unscoped-ways",
+      "tags-filter-bool-errors",
+      "tags-filter-bool-differential"
+    ],
+    "passed": 50,
+    "full_suite_run": false
+  },
+  "focused_unit": {
+    "filter": "[reverse-references],[tags-filter-bool]",
+    "test_cases": 23,
+    "assertions": 10386,
+    "passed": true
+  },
+  "build": {
+    "type": "Release",
+    "compiler": "GCC 14.2.0",
+    "cxx": 17
+  },
+  "implementation_commit": "8fa0a74a19c05d26b8fee09eec54699bd0e512b0",
+  "branch": "feature/1-get-parents-extended"
+}

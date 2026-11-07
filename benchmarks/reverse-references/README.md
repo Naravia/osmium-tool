@@ -1,5 +1,8 @@
 # Reverse-reference exploration
 
+The historical exploration below is followed by the shared-engine/command
+implementation recorded in [`command-validation.md`](command-validation.md).
+
 Feature branch: `feature/1-tags-filter-bool-reverse-references`, based on the
 predicate-cache branch. This is an exploration, not a new installed command.
 No libosmium, existing osmium command, shared utility, or pipeline is modified.
