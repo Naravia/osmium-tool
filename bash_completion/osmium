@@ -10,7 +10,7 @@
 
 _osmium_commands="add-locations-to-ways apply-changes cat changeset-filter
 check-refs create-locations-index derive-changes diff export extract fileinfo
-getid getparents help merge merge-changes query-locations-index removeid
+getid getparents get-parents-extended help merge merge-changes query-locations-index removeid
 renumber show sort tags-count tags-filter tags-filter-bool time-filter"
 
 _osmium_help_topics="$_osmium_commands file-formats index-types"
@@ -100,6 +100,8 @@ __osmium_opts()
             echo "$common $input $outfmt $output $progress --default-type -i --id-file -I --id-osm-file -r --add-referenced -H --with-history --verbose-ids";;
         getparents)
             echo "$common $input $outfmt $output $progress --default-type -i --id-file -I --id-osm-file -s --add-self --verbose-ids";;
+        get-parents-extended)
+            echo "$common $input $outfmt $output $progress --default-type -i --id-file -I --id-osm-file -s --add-self --parents-expression --parent-relationships";;
         merge)
             echo "$common $input $outfmt $output $progress";;
         merge-changes)
@@ -119,7 +121,7 @@ __osmium_opts()
         tags-filter)
             echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced";;
         tags-filter-bool)
-            echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced -t --remove-tags";;
+            echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced -t --remove-tags --include-parents --parents-expression --parent-relationships";;
         time-filter)
             echo "$common $input $outfmt $output $progress";;
     esac
@@ -151,6 +153,9 @@ __osmium_complete_arg()
             return 0;;
         --default-type)
             COMPREPLY=( $(compgen -W "$_osmium_object_types" -- "$cur") )
+            return 0;;
+        --parents-expression)
+            COMPREPLY=()
             return 0;;
         --clean)
             COMPREPLY=( $(compgen -W "$_osmium_attr_types" -- "$cur") )
@@ -236,7 +241,7 @@ __osmium_complete_arg()
             [[ $cmd == extract ]] || return 1
             __osmium_dirs
             return 0;;
-        --index-file|--id-file)
+        --index-file|--id-file|--parent-relationships)
             __osmium_filedir
             return 0;;
         --id-osm-file)
@@ -253,7 +258,7 @@ __osmium_complete_arg()
                 create-locations-index|query-locations-index)
                     __osmium_filedir
                     return 0;;
-                getid|getparents|removeid)
+                getid|getparents|get-parents-extended|removeid)
                     __osmium_filedir
                     return 0;;
                 renumber)
@@ -263,7 +268,7 @@ __osmium_complete_arg()
             return 1;;
         -I)
             case $cmd in
-                getid|getparents|removeid)
+                getid|getparents|get-parents-extended|removeid)
                     __osmium_filedir "$_osmium_file_ext"
                     return 0;;
             esac

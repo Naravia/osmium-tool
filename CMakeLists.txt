@@ -244,6 +244,7 @@ SET(OSMIUM_COMMANDS
     fileinfo
     getid
     getparents
+    get-parents-extended
     merge
     merge-changes
     query-locations-index
@@ -264,6 +265,7 @@ set(OSMIUM_SOURCE_FILES
     io.cpp
     util.cpp
     tags_filter_bool/expression.cpp
+    reverse_references/parent_lookup.cpp
     command_help.cpp
     option_clean.cpp
     export/export_format_json.cpp

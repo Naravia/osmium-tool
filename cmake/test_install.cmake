@@ -13,6 +13,7 @@ set(OSMIUM_INSTALL_FILES
     share/man/man1/osmium-fileinfo.1
     share/man/man1/osmium-getid.1
     share/man/man1/osmium-getparents.1
+    share/man/man1/osmium-get-parents-extended.1
     share/man/man1/osmium-merge-changes.1
     share/man/man1/osmium-merge.1
     share/man/man1/osmium-query-locations-index.1
@@ -57,4 +58,3 @@ if(NOT "${OSMIUM_INSTALL_FILES}" STREQUAL "${_file_list}")
     endif()
     message(FATAL_ERROR "Install broken")
 endif()
-

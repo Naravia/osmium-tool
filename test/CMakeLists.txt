@@ -15,6 +15,7 @@ set(ALL_UNIT_TESTS
     cat/test_setup.cpp
     diff/test_setup.cpp
     extract/test_unit.cpp
+    get-parents-extended/test_unit.cpp
     tags-filter-bool/test_setup.cpp
     tags-filter-bool/test_unit.cpp
     time-filter/test_setup.cpp

@@ -91,6 +91,9 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
     ("invert-match,i", "Invert the sense of matching, exclude objects with matching tags")
     ("omit-referenced,R", "Omit referenced objects")
     ("remove-tags,t", "Remove tags from non-matching objects")
+    ("include-parents", "Include direct parents of the original matching objects")
+    ("parents-expression", po::value<std::vector<std::string>>()->composing(), "Boolean predicate on parents (repeatable, ORed)")
+    ("parent-relationships", po::value<std::string>(), "Write occurrence-level child/parent TSV")
     ;
 
     const po::options_description opts_common{add_common_options()};
@@ -122,6 +125,29 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
     setup_progress(vm);
     setup_input_file(vm);
     setup_output_file(vm);
+
+    m_include_parents = vm.count("include-parents") != 0;
+    if (!m_include_parents && (vm.count("parents-expression") || vm.count("parent-relationships"))) {
+        throw argument_error{"Parent options require --include-parents."};
+    }
+    if (m_include_parents && m_input_filename == "-") {
+        throw argument_error{"--include-parents requires a replayable source file, not STDIN."};
+    }
+    if (m_include_parents) {
+        std::vector<std::string> protected_files{m_input_filename};
+        if (vm.count("expressions")) protected_files.push_back(vm["expressions"].as<std::string>());
+        reverse_references::check_distinct_output(m_output_filename, protected_files);
+    }
+    if (vm.count("parents-expression")) {
+        m_parent_filter.setup(vm["parents-expression"].as<std::vector<std::string>>());
+    }
+    if (vm.count("parent-relationships")) {
+        m_relationships = vm["parent-relationships"].as<std::string>();
+        if (m_relationships.empty()) throw argument_error{"Parent relationship filename must not be empty."};
+        std::vector<std::string> protected_files{m_input_filename, m_output_filename};
+        if (vm.count("expressions")) protected_files.push_back(vm["expressions"].as<std::string>());
+        reverse_references::check_relationship_path(m_relationships, protected_files, m_output_overwrite == osmium::io::overwrite::allow);
+    }
 
     if (vm.count("omit-referenced")) {
         m_add_referenced_objects = false;
@@ -159,6 +185,7 @@ void CommandTagsFilterBool::show_arguments() {
     m_vout << "  other options:\n";
     m_vout << "    add referenced objects: " << yes_no(m_add_referenced_objects);
     m_vout << "    invert match: " << yes_no(m_invert_match);
+    m_vout << "    include direct parents: " << yes_no(m_include_parents);
     if (m_add_referenced_objects) {
         m_vout << "    remove tags on non-matching objects: " << yes_no(m_remove_tags);
     }
@@ -169,6 +196,13 @@ void CommandTagsFilterBool::show_arguments() {
 }
 
 osmium::osm_entity_bits::type CommandTagsFilterBool::get_needed_types() const {
+    if (m_include_parents) {
+        auto types = m_root_ids.types() | m_parent_ids.types();
+        for (const auto type : {osmium::item_type::node, osmium::item_type::way, osmium::item_type::relation}) {
+            if (!m_referenced_ids(type).empty()) types |= osmium::osm_entity_bits::from_item_type(type);
+        }
+        return types;
+    }
     if (m_invert_match) {
         return osmium::osm_entity_bits::nwr;
     }
@@ -247,7 +281,8 @@ bool CommandTagsFilterBool::find_relations_in_relations() {
     while (osmium::memory::Buffer buffer = reader.read()) {
         for (const auto& relation : buffer.select<osmium::Relation>()) {
             stash.add_members(relation);
-            if (matches_relation(relation) != m_invert_match) {
+            if (m_include_parents ? (m_root_ids.contains(relation.type(), relation.id()) || m_parent_ids.contains(relation.type(), relation.id()))
+                                  : matches_relation(relation) != m_invert_match) {
                 m_matching_ids(osmium::item_type::relation).set(relation.positive_id());
                 for (const auto& member : relation.members()) {
                     if (member.type() == osmium::item_type::node) {
@@ -297,7 +332,8 @@ void CommandTagsFilterBool::find_nodes_in_ways() {
     osmium::io::Reader reader{m_input_file, osmium::osm_entity_bits::way};
     while (osmium::memory::Buffer buffer = reader.read()) {
         for (const auto& way : buffer.select<osmium::Way>()) {
-            if (matches_way(way) != m_invert_match) {
+            if (m_include_parents ? (m_root_ids.contains(way.type(), way.id()) || m_parent_ids.contains(way.type(), way.id()))
+                                  : matches_way(way) != m_invert_match) {
                 m_matching_ids(osmium::item_type::way).set(way.positive_id());
                 add_nodes(way);
             } else if (m_referenced_ids(osmium::item_type::way).get(way.positive_id())) {
@@ -310,7 +346,8 @@ void CommandTagsFilterBool::find_nodes_in_ways() {
 
 void CommandTagsFilterBool::find_referenced_objects() {
     m_vout << "Following references...\n";
-    bool todo = !m_filters(osmium::item_type::relation).empty() || !m_area_filters.empty() || m_invert_match;
+    bool todo = m_include_parents ? (m_root_ids.has(osmium::item_type::relation) || m_parent_ids.has(osmium::item_type::relation))
+                                 : (!m_filters(osmium::item_type::relation).empty() || !m_area_filters.empty() || m_invert_match);
     if (todo) {
         todo = find_relations_in_relations();
     }
@@ -318,10 +355,40 @@ void CommandTagsFilterBool::find_referenced_objects() {
         find_nodes_and_ways_in_relations();
     }
     // Inversion can select ways even when no way expressions were supplied.
-    if (!m_referenced_ids(osmium::item_type::way).empty() || !m_filters(osmium::item_type::way).empty() || !m_area_filters.empty() || m_invert_match) {
+    const bool ways = m_include_parents ? (m_root_ids.has(osmium::item_type::way) || m_parent_ids.has(osmium::item_type::way))
+                                       : (!m_filters(osmium::item_type::way).empty() || !m_area_filters.empty() || m_invert_match);
+    if (!m_referenced_ids(osmium::item_type::way).empty() || ways) {
         find_nodes_in_ways();
     }
     m_vout << "Done following references.\n";
+}
+
+void CommandTagsFilterBool::find_parent_objects() {
+    m_vout << "Collecting original matching IDs for parent lookup...\n";
+    ++m_count_passes;
+    osmium::io::Reader seeds{m_input_file, osmium::osm_entity_bits::nwr};
+    reverse_references::require_snapshot(m_input_file, seeds.header());
+    while (osmium::memory::Buffer buffer = seeds.read()) {
+        for (const auto& object : buffer.select<osmium::OSMObject>()) {
+            if (object.id() <= 0) throw argument_error{"Parent lookup requires positive OSM IDs."};
+            if (matches_object(object) != m_invert_match) m_root_ids.add(object.type(), object.id());
+        }
+    }
+    seeds.close();
+    reverse_references::ParentLookup lookup{m_root_ids, m_parent_filter};
+    reverse_references::Relationships relationships{m_relationships};
+    if (lookup.types() != osmium::osm_entity_bits::nothing) {
+        m_vout << "Finding direct parents of the frozen original matches...\n";
+        ++m_count_passes;
+        osmium::io::Reader parents{m_input_file, lookup.types()};
+        while (osmium::memory::Buffer buffer = parents.read()) {
+            for (const auto& object : buffer.select<osmium::OSMObject>()) {
+                if (lookup.matches(object, &relationships)) m_parent_ids.add(object.type(), object.id());
+            }
+        }
+        parents.close();
+    }
+    relationships.close();
 }
 
 void CommandTagsFilterBool::copy_matching_objects(osmium::io::Reader& reader, osmium::io::Writer& writer) {
@@ -331,6 +398,15 @@ void CommandTagsFilterBool::copy_matching_objects(osmium::io::Reader& reader, os
     while (osmium::memory::Buffer buffer = reader.read()) {
         progress_bar.update(reader.offset());
         for (auto& object : buffer.select<osmium::OSMObject>()) {
+            if (m_include_parents) {
+                if (m_root_ids.contains(object.type(), object.id()) || m_parent_ids.contains(object.type(), object.id())) {
+                    writer(object);
+                } else if (m_add_referenced_objects && m_referenced_ids(object.type()).get(object.positive_id())) {
+                    if (m_remove_tags) object.remove_tags();
+                    writer(object);
+                }
+                continue;
+            }
             if (m_matching_ids(object.type()).get(object.positive_id())) {
                 writer(object);
             } else if ((!m_add_referenced_objects || object.type() == osmium::item_type::node) && matches_object(object) != m_invert_match) {
@@ -347,6 +423,7 @@ void CommandTagsFilterBool::copy_matching_objects(osmium::io::Reader& reader, os
 }
 
 bool CommandTagsFilterBool::run() {
+    if (m_include_parents) find_parent_objects();
     m_vout << "Opening output file...\n";
     osmium::io::Writer writer{m_output_file, m_output_overwrite, m_fsync};
     if (m_add_referenced_objects) {

@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "cmd.hpp" // IWYU pragma: export
 #include "tags_filter_bool/expression.hpp"
+#include "reverse_references/parent_lookup.hpp"
 
 #include <osmium/fwd.hpp>
 #include <osmium/index/id_set.hpp>
@@ -45,6 +46,10 @@ class CommandTagsFilterBool : public CommandWithSingleOSMInput, public with_osm_
     tags_filter_bool::Filter m_area_filters;
     osmium::nwr_array<tags_filter_bool::Filter::Context> m_filter_contexts;
     tags_filter_bool::Filter::Context m_area_context;
+    reverse_references::ObjectIds m_root_ids;
+    reverse_references::ObjectIds m_parent_ids;
+    reverse_references::ParentFilter m_parent_filter;
+    std::string m_relationships;
 
     osmium::nwr_array<osmium::index::IdSetDense<osmium::unsigned_object_id_type>> m_matching_ids;
     osmium::nwr_array<osmium::index::IdSetDense<osmium::unsigned_object_id_type>> m_referenced_ids;
@@ -53,10 +58,12 @@ class CommandTagsFilterBool : public CommandWithSingleOSMInput, public with_osm_
     bool m_add_referenced_objects = true;
     bool m_invert_match = false;
     bool m_remove_tags = false;
+    bool m_include_parents = false;
 
     osmium::osm_entity_bits::type get_needed_types() const;
 
     void find_referenced_objects();
+    void find_parent_objects();
     void add_nodes(const osmium::Way& way);
 
     bool matches_node(const osmium::Node& node) noexcept;

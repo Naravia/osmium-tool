@@ -59,6 +59,12 @@ adding expressions to restore caching if the predicate count changed.
 
 ## Updating upstream
 
+The optional `--include-parents` mode uses the shared extension-local engine
+described in [`../reverse_references/README.md`](../reverse_references/README.md).
+Keep its frozen-root, parent/dependency provenance and no-subprocess guarantees
+when updating the copied reference traversal. Without that option the prior
+filtering path remains intact.
+
 1. Rebase the feature branch onto the desired upstream version. Integration
    edits are additive: command/source registration, unit-test registration,
    manual registration/install manifest, and Bash/Zsh completion entries.

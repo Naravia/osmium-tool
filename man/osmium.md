@@ -65,6 +65,9 @@ getid
 getparents
 :   get parents of objects from OSM file
 
+get-parents-extended
+:   get direct parents using sparse seed IDs, Boolean parent predicates, and optional relationship mappings
+
 help
 :   show help about commands
 
@@ -151,4 +154,3 @@ killer" to find out more about this.
   [**osmium-index-types**(5)](osmium-index-types.html),
   [**osmium-output-headers**(5)](osmium-output-headers.html)
 * [Osmium website](https://osmcode.org/osmium-tool/)
-

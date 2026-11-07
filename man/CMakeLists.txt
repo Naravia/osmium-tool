@@ -60,6 +60,7 @@ if(PANDOC)
     add_man_page(1 osmium-fileinfo)
     add_man_page(1 osmium-getid)
     add_man_page(1 osmium-getparents)
+    add_man_page(1 osmium-get-parents-extended)
     add_man_page(1 osmium-merge)
     add_man_page(1 osmium-merge-changes)
     add_man_page(1 osmium-query-locations-index)
@@ -80,5 +81,4 @@ else()
     message(STATUS "Looking for pandoc - not found")
     message(STATUS "  Manual pages will not be built")
 endif()
-
 

@@ -14,6 +14,7 @@
 #include "command_fileinfo.hpp"
 #include "command_getid.hpp"
 #include "command_getparents.hpp"
+#include "command_get_parents_extended.hpp"
 #include "command_help.hpp"
 #include "command_merge.hpp"
 #include "command_merge_changes.hpp"
@@ -80,6 +81,10 @@ void register_commands(CommandFactory& cmd_factory) {
         return std::make_unique<CommandGetParents>(cmd_factory);
     });
 
+    cmd_factory.register_command("get-parents-extended", "Get direct parents using sparse IDs and optional Boolean predicates", [&]() {
+        return std::make_unique<CommandGetParentsExtended>(cmd_factory);
+    });
+
     cmd_factory.register_command("help", "Show osmium help", [&]() {
         return std::make_unique<CommandHelp>(cmd_factory);
     });
@@ -127,4 +132,3 @@ void register_commands(CommandFactory& cmd_factory) {
         return std::make_unique<CommandTimeFilter>(cmd_factory);
     });
 }
-

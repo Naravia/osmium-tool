@@ -26,7 +26,7 @@ Referenced nodes of matching ways and members of matching relations are also
 included, recursively, unless **\--omit-referenced/-R** is used. Referenced
 objects need not match the expression. Output order is the input order.
 
-With **-R** the input is read once. Otherwise up to three passes may be needed
+Without **--include-parents**, **-R** reads the input once. Otherwise multiple passes may be needed
 to complete references. STDIN is supported only with **-R**. History files
 work correctly only with **-R**. Do not use this command on change files.
 
@@ -50,12 +50,40 @@ This is a separate command. It does not change the syntax or behavior of
     excluded objects.
 
 -R, \--omit-referenced
-:   Do not add referenced objects. This permits reading OSM input from STDIN.
+:   Do not add downward dependencies. Parent objects are still included when
+    **--include-parents** is used. STDIN is permitted only without parent lookup.
 
 -t, \--remove-tags
 :   Remove tags from referenced-only objects. Objects that independently match
     the selection (after inversion, if enabled) retain their tags, even when
-    also referenced. This option has no effect with **-R**.
+    also referenced. Explicitly included parents retain their tags too. Only
+    dependency-only objects lose tags. This option has no effect with **-R**.
+
+\--include-parents
+:   Include objects directly referencing the original matches (after inversion).
+    Seed IDs are frozen before parent lookup. Found parents and geometry-support
+    objects never cause additional reverse hops. Normal downward reference
+    completion then applies to matches and parents, unless **-R** is used.
+    This may considerably expand output, especially for route/boundary parents.
+    Requires a replayable positive-ID snapshot file, even with **-R**; history,
+    change files, and source STDIN are unsupported in this mode. Uses the same
+    in-process engine as **get-parents-extended**, not a subprocess. Existing
+    behavior remains unchanged without this option.
+
+\--parents-expression=EXPRESSION
+:   Restrict qualifying parents using Boolean tag expressions, for example
+    `r/type=multipolygon`. May be repeated; alternatives are ORed. Does not
+    restrict original matches or downward dependencies. Requires
+    **--include-parents**.
+
+\--parent-relationships=FILE
+:   Write original-seed-to-parent membership occurrences as TSV. Columns are
+    child, parent, role_percent_escaped, member_index; IDs are typed, indices
+    are zero-based, and roles escape percent/tab/CR/LF. Repeated occurrences
+    and roles are retained. Downward dependency edges are not recorded.
+    Requires **--include-parents**, a named path distinct from inputs/OSM
+    output, and **--overwrite** to replace an existing file. **--fsync** applies
+    only to OSM output. See **osmium-get-parents-extended**(1).
 
 @MAN_COMMON_OPTIONS@
 @MAN_PROGRESS_OPTIONS@
