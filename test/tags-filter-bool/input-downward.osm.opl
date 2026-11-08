@@ -1,0 +1,24 @@
+n1 v2 dV c31 t2026-01-01T00:00:00Z i7 uTester Tname=label x1 y1
+n2 v1 dV c0 t i0 u Tname=two x2 y2
+n3 v1 dV c0 t i0 u Tname=three x3 y3
+n4 v1 dV c0 t i0 u Tname=four x4 y4
+n5 v1 dV c0 t i0 u Tname=five x5 y5
+n6 v1 dV c0 t i0 u Tname=six x6 y6
+n7 v1 dV c0 t i0 u Tname=seven x7 y7
+n8 v1 dV c0 t i0 u Tname=eight x8 y8
+n9 v1 dV c0 t i0 u Tname=nine x9 y9
+n10 v1 dV c0 t i0 u Tname=ten x10 y10
+w10 v3 dV c32 t2026-01-02T00:00:00Z i7 uTester Tname=direct Nn2,n3,n999
+w11 v1 dV c0 t i0 u Tname=nested Nn4,n5
+w12 v1 dV c0 t i0 u Tselect=yes Nn6,n7
+w13 v1 dV c0 t i0 u Tname=deep Nn8,n999
+w14 v1 dV c0 t i0 u Tname=deepest Nn9,n10
+r20 v4 dV c33 t2026-01-03T00:00:00Z i7 uTester Troot=yes,parent=yes Mr21@first,w10@outer,n1@label,r21@repeat,r999@absent,w999@absent
+r21 v2 dV c34 t2026-01-04T00:00:00Z i8 uOther Tnested=yes,type=site Mr22@next,w11@inner,w10@shared,n999@absent
+r22 v1 dV c0 t i0 u Tname=cycle Mr20@back,w13@deep,r23@next
+r23 v1 dV c0 t i0 u Tname=end Mw14@end
+r24 v1 dV c0 t i0 u Troot=short Mr22@shortcut
+r25 v1 dV c0 t i0 u Tparent=yes Mr20@seed,r26@support
+r26 v1 dV c0 t i0 u Tname=support Mw14@support
+r27 v1 dV c0 t i0 u Tparent=yes Mw11@not-a-reverse-seed
+r28 v1 dV c0 t i0 u Tparent=yes Mr25@ancestor

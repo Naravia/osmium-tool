@@ -28,3 +28,29 @@ execute_process(COMMAND "${osmium}" tags-filter-bool "${input}" -e "${source}/ta
 if(NOT result EQUAL 2 OR NOT stderr MATCHES "Could not open file")
     message(FATAL_ERROR "Missing expression file must fail: ${stderr}")
 endif()
+
+foreach(limit IN ITEMS "" "-1" "+1" "1.0" "one" "18446744073709551616")
+    execute_process(COMMAND "${osmium}" tags-filter-bool "${input}" "r/type"
+        --downward-relation-hops "${limit}" -o "${output}"
+        RESULT_VARIABLE result ERROR_VARIABLE stderr)
+    if(NOT result EQUAL 2 OR NOT stderr MATCHES "Downward relation hop")
+        message(FATAL_ERROR "Invalid downward limit '${limit}' must fail: ${result}, ${stderr}")
+    endif()
+    if(EXISTS "${output}")
+        message(FATAL_ERROR "Invalid limit created an output file")
+    endif()
+endforeach()
+
+foreach(limit 0 1)
+    foreach(omit -R --omit-referenced)
+        execute_process(COMMAND "${osmium}" tags-filter-bool "${input}" "r/type"
+            "--downward-relation-hops=${limit}" "${omit}" -o "${output}"
+            RESULT_VARIABLE result ERROR_VARIABLE stderr)
+        if(NOT result EQUAL 2 OR NOT stderr MATCHES "can not be combined")
+            message(FATAL_ERROR "Contradictory downward options must fail: ${result}, ${stderr}")
+        endif()
+        if(EXISTS "${output}")
+            message(FATAL_ERROR "Contradictory options created an output file")
+        endif()
+    endforeach()
+endforeach()

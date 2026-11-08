@@ -44,7 +44,7 @@ check_tags_filter_bool(invert-unscoped-ways "-i" "n/note" "n1;n2;w1")
 check_tags_filter_bool(id-chunks "" "w/select=yes" "n8191;n8192;n4294967297;w8191")
 check_tags_filter_bool(id-chunks-strip "-t" "w/select=yes" "n8191;n8192;n4294967297;w8191")
 
-foreach(_script errors differential)
+foreach(_script errors differential downward)
     add_test(NAME tags-filter-bool-${_script}
         COMMAND ${CMAKE_COMMAND}
         "-Dosmium=$<TARGET_FILE:osmium>"

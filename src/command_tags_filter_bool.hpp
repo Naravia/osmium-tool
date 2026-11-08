@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <osmium/osm/item_type.hpp>
 #include <osmium/osm/types.hpp>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -60,6 +61,7 @@ class CommandTagsFilterBool : public CommandWithSingleOSMInput, public with_osm_
     bool m_remove_tags = false;
     bool m_include_parents = false;
     std::size_t m_parent_hops = 1;
+    std::optional<std::size_t> m_downward_relation_hops;
 
     osmium::osm_entity_bits::type get_needed_types() const;
 
@@ -74,6 +76,7 @@ class CommandTagsFilterBool : public CommandWithSingleOSMInput, public with_osm_
 
     void mark_rel_ids(const osmium::index::RelationsMapIndex& rel_in_rel, osmium::unsigned_object_id_type parent_id);
     bool find_relations_in_relations();
+    void find_bounded_relation_members();
     void find_nodes_and_ways_in_relations();
     void find_nodes_in_ways();
 

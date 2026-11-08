@@ -33,6 +33,25 @@ TEST_CASE("tags-filter-bool setup", "[tags-filter-bool]") {
     SECTION("multiple alternatives and common flags") {
         REQUIRE(cmd.setup({"test/tags-filter/input.osm", "n/amenity AND NOT name", "w/highway", "-i", "-t", "-R", "-f", "opl"}));
     }
+    SECTION("downward relation hops without parent lookup") {
+        const auto hops = GENERATE("0", "1", "2", "0002", "18446744073709551615");
+        // The largest value is valid only if size_t can represent it.
+        if (std::string{hops} != "18446744073709551615" || sizeof(std::size_t) >= 8) {
+            REQUIRE(cmd.setup({"test/tags-filter/input.osm", "r/type", "--downward-relation-hops", hops, "-f", "opl"}));
+        }
+    }
+    SECTION("invalid downward relation hops") {
+        const auto hops = GENERATE("", "-1", "+1", "1.0", " 1", "1 ", "one", "18446744073709551616");
+        REQUIRE_THROWS_AS(cmd.setup({"test/tags-filter/input.osm", "r/type", "--downward-relation-hops", hops, "-f", "opl"}), argument_error);
+    }
+    SECTION("downward limit conflicts with omit-referenced, including zero") {
+        const auto hops = GENERATE("0", "1");
+        const auto omit = GENERATE("-R", "--omit-referenced");
+        REQUIRE_THROWS_AS(cmd.setup({"test/tags-filter/input.osm", "r/type", "--downward-relation-hops", hops, omit, "-f", "opl"}), argument_error);
+    }
+    SECTION("bounded completion still requires replayable input") {
+        REQUIRE_THROWS_AS(cmd.setup({"-", "r/type", "--downward-relation-hops=0", "-F", "opl", "-f", "opl"}), argument_error);
+    }
     SECTION("file syntax errors have filename and line") {
         try {
             cmd.setup({"test/tags-filter/input.osm", "-e", "test/tags-filter-bool/invalid-expressions.txt", "-f", "opl"});
