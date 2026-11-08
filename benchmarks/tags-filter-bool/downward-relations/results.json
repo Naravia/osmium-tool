@@ -1,0 +1,406 @@
+{
+  "created_at": "2026-11-08T19:09:05.904551+00:00",
+  "branch": "feature/6-bounded-downward-relations",
+  "base_commit": "b7796eca318443d8be500dc4dfd0b08078bb596e",
+  "working_tree_modified": true,
+  "binary": {
+    "path": "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+    "sha256": "7889c8ae07ca2d16ae0dc68ba5ffd352567664f50e0d6b678060a732654f44dc",
+    "bytes": 3028816
+  },
+  "version": "osmium version 1.19.1 (archive/perf/1-tags-filter-bool-dependency-chunks-4-gb7796ec-changed)\nlibosmium version 2.23.1\nSupported PBF compression types: none zlib\n\nCopyright (C) 2013-2026  Jochen Topf <jochen@topf.org>\nLicense: GNU GENERAL PUBLIC LICENSE Version 3 <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+  "source": {
+    "path": "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+    "sha256": "c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111",
+    "bytes": 296211267
+  },
+  "expressions": {
+    "path": "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+    "sha256": "eec4c4d01d699929b61f4063036b0960ed668d3e4522eece74766229cf605c01",
+    "bytes": 15498
+  },
+  "host": {
+    "platform": "Linux-7.0.14-12-pve-x86_64-with-glibc2.41",
+    "logical_cpus": 4,
+    "affinity_cpus": 4
+  },
+  "method": {
+    "OSMIUM_POOL_THREADS": "-2",
+    "runs_per_mode": 3,
+    "pair_orders": [
+      [
+        "recursive",
+        "depth1"
+      ],
+      [
+        "depth1",
+        "recursive"
+      ],
+      [
+        "recursive",
+        "depth1"
+      ]
+    ],
+    "warmups": 0,
+    "cache": "No cache flush; input hashing before runs warms the page cache.",
+    "wall_time": "perf_counter; filter process startup through exit, including PBF/TSV output; excludes post-run inspection and hashes.",
+    "memory": "Linux wait4 ru_maxrss: maximum RSS of each individual process, KiB.",
+    "cpu_time": "Linux wait4 user plus system seconds, summed over all threads.",
+    "concurrency": "Filter runs sequential; no concurrent builds or other benchmark jobs launched.",
+    "selection": "Existing Boolean filter, two reverse hops, multipolygon parent predicate, remove dependency-only tags.",
+    "only_variable": "--downward-relation-hops=1 present versus absent (recursive).",
+    "fsync": false
+  },
+  "runs": [
+    {
+      "mode": "recursive",
+      "round": 1,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parent-hops=2",
+        "--parents-expression=r/type=multipolygon",
+        "--remove-tags",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.tsv",
+        "-o",
+        "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.osm.pbf"
+      ],
+      "return_code": 0,
+      "wall_seconds": 43.401713450904936,
+      "peak_rss_kib": 219972,
+      "peak_rss_mib": 214.81640625,
+      "cpu_user_seconds": 60.646105,
+      "cpu_system_seconds": 0.955978,
+      "cpu_total_seconds": 61.602083,
+      "stderr_path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.stderr.log",
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "relationships": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "input_passes": 7
+    },
+    {
+      "mode": "depth1",
+      "round": 1,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parent-hops=2",
+        "--parents-expression=r/type=multipolygon",
+        "--remove-tags",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-1.tsv",
+        "-o",
+        "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-1.osm.pbf",
+        "--downward-relation-hops=1"
+      ],
+      "return_code": 0,
+      "wall_seconds": 42.629213253967464,
+      "peak_rss_kib": 229152,
+      "peak_rss_mib": 223.78125,
+      "cpu_user_seconds": 58.552192,
+      "cpu_system_seconds": 0.865007,
+      "cpu_total_seconds": 59.417199,
+      "stderr_path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-1.stderr.log",
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-1.osm.pbf",
+        "sha256": "10a222305033c655f406f4b3941159155361858beb96750022b0fbc8929b69e6",
+        "bytes": 14415828
+      },
+      "relationships": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-1.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "input_passes": 6
+    },
+    {
+      "mode": "depth1",
+      "round": 2,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parent-hops=2",
+        "--parents-expression=r/type=multipolygon",
+        "--remove-tags",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-2.tsv",
+        "-o",
+        "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-2.osm.pbf",
+        "--downward-relation-hops=1"
+      ],
+      "return_code": 0,
+      "wall_seconds": 42.43314842693508,
+      "peak_rss_kib": 229608,
+      "peak_rss_mib": 224.2265625,
+      "cpu_user_seconds": 58.368833,
+      "cpu_system_seconds": 0.862208,
+      "cpu_total_seconds": 59.231041000000005,
+      "stderr_path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-2.stderr.log",
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-2.osm.pbf",
+        "sha256": "10a222305033c655f406f4b3941159155361858beb96750022b0fbc8929b69e6",
+        "bytes": 14415828
+      },
+      "relationships": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-2.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "input_passes": 6
+    },
+    {
+      "mode": "recursive",
+      "round": 2,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parent-hops=2",
+        "--parents-expression=r/type=multipolygon",
+        "--remove-tags",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-2.tsv",
+        "-o",
+        "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-2.osm.pbf"
+      ],
+      "return_code": 0,
+      "wall_seconds": 43.457264398923144,
+      "peak_rss_kib": 219912,
+      "peak_rss_mib": 214.7578125,
+      "cpu_user_seconds": 60.774838,
+      "cpu_system_seconds": 0.9528439999999999,
+      "cpu_total_seconds": 61.727682,
+      "stderr_path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-2.stderr.log",
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-2.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "relationships": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-2.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "input_passes": 7
+    },
+    {
+      "mode": "recursive",
+      "round": 3,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parent-hops=2",
+        "--parents-expression=r/type=multipolygon",
+        "--remove-tags",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-3.tsv",
+        "-o",
+        "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-3.osm.pbf"
+      ],
+      "return_code": 0,
+      "wall_seconds": 43.40900152386166,
+      "peak_rss_kib": 228240,
+      "peak_rss_mib": 222.890625,
+      "cpu_user_seconds": 60.690634,
+      "cpu_system_seconds": 0.927209,
+      "cpu_total_seconds": 61.617843,
+      "stderr_path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-3.stderr.log",
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-3.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "relationships": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-3.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "input_passes": 7
+    },
+    {
+      "mode": "depth1",
+      "round": 3,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parent-hops=2",
+        "--parents-expression=r/type=multipolygon",
+        "--remove-tags",
+        "--no-progress",
+        "--verbose",
+        "--generator=reverse-reference-exploration",
+        "--parent-relationships=/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-3.tsv",
+        "-o",
+        "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-3.osm.pbf",
+        "--downward-relation-hops=1"
+      ],
+      "return_code": 0,
+      "wall_seconds": 42.52021531504579,
+      "peak_rss_kib": 229820,
+      "peak_rss_mib": 224.43359375,
+      "cpu_user_seconds": 58.440655,
+      "cpu_system_seconds": 0.908481,
+      "cpu_total_seconds": 59.349136,
+      "stderr_path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-3.stderr.log",
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-3.osm.pbf",
+        "sha256": "10a222305033c655f406f4b3941159155361858beb96750022b0fbc8929b69e6",
+        "bytes": 14415828
+      },
+      "relationships": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-3.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "input_passes": 6
+    }
+  ],
+  "summary": {
+    "recursive": {
+      "runs": 3,
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "counts": {
+        "nodes": 1419799,
+        "ways": 60341,
+        "relations": 4188
+      },
+      "total_objects": 1484328,
+      "input_passes": 7,
+      "wall_seconds": {
+        "median": 43.40900152386166,
+        "min": 43.401713450904936,
+        "max": 43.457264398923144,
+        "values": [
+          43.401713450904936,
+          43.457264398923144,
+          43.40900152386166
+        ]
+      },
+      "peak_rss_mib": {
+        "median": 214.81640625,
+        "min": 214.7578125,
+        "max": 222.890625,
+        "values": [
+          214.81640625,
+          214.7578125,
+          222.890625
+        ]
+      },
+      "cpu_total_seconds": {
+        "median": 61.617843,
+        "min": 61.602083,
+        "max": 61.727682,
+        "values": [
+          61.602083,
+          61.727682,
+          61.617843
+        ]
+      }
+    },
+    "depth1": {
+      "runs": 3,
+      "output": {
+        "path": "/tmp/opencode/osmium-issue6-downward-brandenburg/depth1-1.osm.pbf",
+        "sha256": "10a222305033c655f406f4b3941159155361858beb96750022b0fbc8929b69e6",
+        "bytes": 14415828
+      },
+      "counts": {
+        "nodes": 1417962,
+        "ways": 60260,
+        "relations": 4181
+      },
+      "total_objects": 1482403,
+      "input_passes": 6,
+      "wall_seconds": {
+        "median": 42.52021531504579,
+        "min": 42.43314842693508,
+        "max": 42.629213253967464,
+        "values": [
+          42.629213253967464,
+          42.43314842693508,
+          42.52021531504579
+        ]
+      },
+      "peak_rss_mib": {
+        "median": 224.2265625,
+        "min": 223.78125,
+        "max": 224.43359375,
+        "values": [
+          223.78125,
+          224.2265625,
+          224.43359375
+        ]
+      },
+      "cpu_total_seconds": {
+        "median": 59.349136,
+        "min": 59.231041000000005,
+        "max": 59.417199,
+        "values": [
+          59.417199,
+          59.231041000000005,
+          59.349136
+        ]
+      }
+    }
+  },
+  "comparison": {
+    "wall_reduction_percent": 2.0474698279510317,
+    "peak_rss_reduction_percent": -4.380557525503237,
+    "output_size_reduction_percent": 0.11720570946176512,
+    "object_count_reduction_percent": 0.12968831686797078,
+    "removed_counts": {
+      "nodes": 1837,
+      "ways": 81,
+      "relations": 7
+    },
+    "reverse_relationships_byte_identical": true,
+    "recursive_matches_pre_feature_saved_output": true,
+    "reverse_relationships_match_pre_feature_saved_output": true
+  },
+  "completed_at": "2026-11-08T19:13:24.376117+00:00"
+}

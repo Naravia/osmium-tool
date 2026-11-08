@@ -1,0 +1,275 @@
+{
+  "binaries": {
+    "baseline": {
+      "path": "/tmp/opencode/osmium-dependency-chunks/baseline/osmium",
+      "sha256": "d455cfba3488465ec947076946fc1d08c55f5c502d23922c41da62c3dab97cee",
+      "bytes": 3018936
+    },
+    "small_chunks": {
+      "path": "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+      "sha256": "795b84fe1bade14440a6541f9af6daec1cc65e767a5895e27e9eceeee1b147e7",
+      "bytes": 3019752
+    }
+  },
+  "source": {
+    "path": "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+    "sha256": "c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111",
+    "bytes": 296211267
+  },
+  "expressions": {
+    "path": "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+    "sha256": "eec4c4d01d699929b61f4063036b0960ed668d3e4522eece74766229cf605c01",
+    "bytes": 15498
+  },
+  "OSMIUM_POOL_THREADS": "-2",
+  "parent_hops": 2,
+  "runs_per_binary": 3,
+  "reference_output": {
+    "path": "/tmp/opencode/osmium-parent-hops-validation/integrated-2.osm.pbf",
+    "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+    "bytes": 14432744
+  },
+  "reference_edges": {
+    "path": "/tmp/opencode/osmium-parent-hops-validation/integrated-2.tsv",
+    "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+    "bytes": 86611
+  },
+  "runs": [
+    {
+      "variant": "baseline",
+      "round": 1,
+      "command": [
+        "/tmp/opencode/osmium-dependency-chunks/baseline/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-1.tsv",
+        "--remove-tags",
+        "--verbose",
+        "--parent-hops=2",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-1.osm.pbf"
+      ],
+      "wall_seconds": 44.78471294604242,
+      "return_code": 0,
+      "peak_rss_kib": 2215720,
+      "peak_rss_mib": 2163.7890625,
+      "user_seconds": 61.495437,
+      "system_seconds": 1.686357,
+      "output": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-1.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "edges": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-1.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "same_reference_output": true,
+      "same_reference_edges": true
+    },
+    {
+      "variant": "small_chunks",
+      "round": 1,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-1.tsv",
+        "--remove-tags",
+        "--verbose",
+        "--parent-hops=2",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-1.osm.pbf"
+      ],
+      "wall_seconds": 43.81515803700313,
+      "return_code": 0,
+      "peak_rss_kib": 220388,
+      "peak_rss_mib": 215.22265625,
+      "user_seconds": 61.023669,
+      "system_seconds": 0.9646579999999999,
+      "output": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-1.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "edges": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-1.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "same_reference_output": true,
+      "same_reference_edges": true
+    },
+    {
+      "variant": "small_chunks",
+      "round": 2,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-2.tsv",
+        "--remove-tags",
+        "--verbose",
+        "--parent-hops=2",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-2.osm.pbf"
+      ],
+      "wall_seconds": 43.89766470482573,
+      "return_code": 0,
+      "peak_rss_kib": 220012,
+      "peak_rss_mib": 214.85546875,
+      "user_seconds": 61.114752,
+      "system_seconds": 0.9570289999999999,
+      "output": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-2.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "edges": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-2.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "same_reference_output": true,
+      "same_reference_edges": true
+    },
+    {
+      "variant": "baseline",
+      "round": 2,
+      "command": [
+        "/tmp/opencode/osmium-dependency-chunks/baseline/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-2.tsv",
+        "--remove-tags",
+        "--verbose",
+        "--parent-hops=2",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-2.osm.pbf"
+      ],
+      "wall_seconds": 44.574718872085214,
+      "return_code": 0,
+      "peak_rss_kib": 2214324,
+      "peak_rss_mib": 2162.42578125,
+      "user_seconds": 61.287125,
+      "system_seconds": 1.747771,
+      "output": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-2.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "edges": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-2.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "same_reference_output": true,
+      "same_reference_edges": true
+    },
+    {
+      "variant": "baseline",
+      "round": 3,
+      "command": [
+        "/tmp/opencode/osmium-dependency-chunks/baseline/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-3.tsv",
+        "--remove-tags",
+        "--verbose",
+        "--parent-hops=2",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-3.osm.pbf"
+      ],
+      "wall_seconds": 44.75812677014619,
+      "return_code": 0,
+      "peak_rss_kib": 2216924,
+      "peak_rss_mib": 2164.96484375,
+      "user_seconds": 61.395206,
+      "system_seconds": 1.794321,
+      "output": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-3.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "edges": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/baseline-3.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "same_reference_output": true,
+      "same_reference_edges": true
+    },
+    {
+      "variant": "small_chunks",
+      "round": 3,
+      "command": [
+        "/mnt/devbox_data/workspace/naravia/osmium-tool/build/src/osmium",
+        "tags-filter-bool",
+        "/mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf",
+        "-e",
+        "/tmp/opencode/osmium-bool-predicate-cache/filter-expressions-bool.txt",
+        "--include-parents",
+        "--parents-expression=r/type=multipolygon",
+        "--parent-relationships=/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-3.tsv",
+        "--remove-tags",
+        "--verbose",
+        "--parent-hops=2",
+        "--no-progress",
+        "--generator=reverse-reference-exploration",
+        "-o",
+        "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-3.osm.pbf"
+      ],
+      "wall_seconds": 43.85552700096741,
+      "return_code": 0,
+      "peak_rss_kib": 219980,
+      "peak_rss_mib": 214.82421875,
+      "user_seconds": 61.078948,
+      "system_seconds": 0.970205,
+      "output": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-3.osm.pbf",
+        "sha256": "d64bba27c9887b2e431e2825d7d4e924b539023763dc252e7304d6c13f6b7068",
+        "bytes": 14432744
+      },
+      "edges": {
+        "path": "/tmp/opencode/osmium-dependency-chunks/two-hop-paired/small_chunks-3.tsv",
+        "sha256": "934203c5090f2034e3fd7417a557265114fe28e92a53f87883fa8db4e4e6c865",
+        "bytes": 86611
+      },
+      "same_reference_output": true,
+      "same_reference_edges": true
+    }
+  ],
+  "method": "Sequential paired runs, alternating order between rounds; input hashing warms cache; no cache flush or invocation warmups. Elapsed time includes PBF/TSV writing and process exit, not subsequent hashing. Peak RSS is Linux wait4.ru_maxrss in KiB, not verbose VmPeak.",
+  "all_checks_passed": true
+}

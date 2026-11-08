@@ -1,0 +1,230 @@
+# Naravia app-data-contract format 4; intended for osmium tags-filter-bool.
+# Expression-file lines are ORed. Each category entry is:
+# (OR of valid mapped selector alternatives) AND (usable-name key) AND
+# (non-empty Wikipedia OR Wikidata key). Names/references get exact validation
+# downstream; these predicates are tag-presence/value prefilters.
+# Standard references: wikipedia, wikipedia:<edition>, wikidata.
+# subject:* references are allowed only for touristSign and stolperstein exceptions.
+# Blank-value guards are omitted as safe supersets and remain downstream checks.
+
+# category: church
+nwr/(building=church AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: cathedral
+nwr/(building=cathedral AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: chapel
+nwr/(building=chapel AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: monastery
+nwr/((amenity=monastery OR historic=monastery OR building=monastery) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: mosque
+nwr/(building=mosque AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: synagogue
+nwr/(building=synagogue AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: temple
+nwr/(building=temple AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: shrineOrCross
+nwr/((historic=wayside_shrine OR historic=wayside_cross OR building=shrine OR man_made=cross) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: otherPlaceOfWorship
+nwr/(amenity=place_of_worship AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: castle
+nwr/(historic=castle AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: palaceOrManor
+nwr/((historic=palace OR historic=manor OR (historic=castle AND castle_type=palace) OR (historic=castle AND castle_type=stately) OR (historic=castle AND castle_type=manor)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: fortification
+nwr/((historic=fort OR historic=city_gate OR historic=citygate OR historic=citywalls) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: archaeologicalSite
+nwr/(historic=archaeological_site AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: battlefield
+nwr/(historic=battlefield AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: monumentOrMemorial
+nwr/((historic=monument OR historic=memorial OR man_made=obelisk) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: stolperstein
+nwr/(((historic=memorial AND memorial=stolperstein) OR (historic=memorial AND memorial:type=stolperstein)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!= OR subject:wikipedia!= OR subject:wikipedia:*!= OR subject:wikidata!=))
+
+# category: ruins
+nwr/((historic=ruins OR ruins=yes) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: townhall
+nwr/((amenity=townhall OR building=townhall OR building=cityhall) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: bridge
+nwr/(man_made=bridge AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: tower
+nwr/((man_made=tower OR historic=tower OR building=tower) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: lighthouse
+nwr/(man_made=lighthouse AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: mill
+nwr/((man_made=windmill OR man_made=watermill OR building=windmill) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: otherHistoricSite
+nwr/((historic!= AND historic!=no) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: museum
+nwr/(tourism=museum AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: gallery
+nwr/(tourism=gallery AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: artwork
+nwr/((tourism=artwork OR man_made=statue) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: theatre
+nwr/(amenity=theatre AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: library
+nwr/(amenity=library AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: zoo
+nwr/(tourism=zoo AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: aquarium
+nwr/(tourism=aquarium AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: themePark
+nwr/(tourism=theme_park AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: otherAttraction
+nwr/((tourism=attraction OR tourism=yes) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: park
+nwr/((leisure=park OR landuse=recreation_ground OR leisure=recreation_ground) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: garden
+nwr/(leisure=garden AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: botanicalGarden
+nwr/(garden:type=botanical AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: arboretum
+nwr/(garden:type=arboretum AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: peak
+nwr/(natural=peak AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: mountainRangeOrRidge
+nwr/((natural=mountain_range OR natural=ridge) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: volcano
+nwr/(natural=volcano AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: valleyOrGorge
+nwr/((natural=valley OR natural=gorge) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: cliff
+nwr/(natural=cliff AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: caveEntrance
+nwr/(natural=cave_entrance AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: rockOrStone
+nwr/((natural=rock OR natural=stone) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: glacier
+nwr/(natural=glacier AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: woodland
+nwr/((natural=wood OR landuse=forest) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: wetland
+nwr/(natural=wetland AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: island
+nwr/((place=island OR place=islet) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: beach
+nwr/(natural=beach AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: cape
+nwr/(natural=cape AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: lake
+nwr/(((natural=water AND water=lake) OR (natural=water AND water=oxbow)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: pond
+nwr/((natural=water AND water=pond) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: reservoir
+nwr/(((natural=water AND water=reservoir) OR landuse=reservoir) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: lagoon
+nwr/((natural=water AND water=lagoon) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: river
+nwr/((waterway=river OR (natural=water AND water=river) OR waterway=riverbank) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: stream
+nwr/((waterway=stream OR (natural=water AND water=stream)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: canal
+nwr/((waterway=canal OR (natural=water AND water=canal)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: waterfall
+nwr/((waterway=waterfall OR natural=waterfall) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: spring
+nwr/(natural=spring AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: bay
+nwr/(natural=bay AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: strait
+nwr/(natural=strait AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: sea
+nwr/(place=sea AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: ocean
+nwr/(place=ocean AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: otherWaterBody
+nwr/(natural=water AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: nationalPark
+nwr/((boundary=national_park OR (boundary=protected_area AND protected_area=national_park) OR (boundary=protected_area AND protection_title=Nationalpark)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: natureReserve
+nwr/((leisure=nature_reserve OR (boundary=protected_area AND protection_title=Naturschutzgebiet)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: naturePark
+nwr/(((boundary=protected_area AND protected_area=recreation) OR (boundary=protected_area AND protection_title=Naturpark)) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: protectedLandscape
+nwr/((boundary=protected_area AND protection_title=Landschaftsschutzgebiet) AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: otherProtectedArea
+nwr/(boundary=protected_area AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: viewpoint
+nwr/(tourism=viewpoint AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!=))
+
+# category: touristSign
+nwr/(traffic_sign=DE:386.3 AND (name!= OR name:en!= OR name:*!= OR official_name!= OR short_name!= OR alt_name!= OR board:title!=) AND (wikipedia!= OR wikipedia:*!= OR wikidata!= OR subject:wikipedia!= OR subject:wikipedia:*!= OR subject:wikidata!=))
+
+# Brandenburg is DE. Administrative roots are relations, not POIs, and need no wiki/name.
+# DE levels: 2, 4, 6, 8, 9; level 9 contains-any matches the documented substrings.
+r/(boundary=administrative AND type=boundary,multipolygon AND (admin_level=2,4,6,8 OR (admin_level=9 AND (name:prefix=*Bezirk OR name:prefix=*bezirk))))
+
+# Direct inspection/context roots (not POI admission):
+r/type=waterway
+r/type=bridge
+w/(bridge!= AND bridge!=no)
+nwr/(natural=water AND water!=)
+w/(boundary=administrative AND admin_level)
+# multipolygonContext remains parent-context only, not an independent root.

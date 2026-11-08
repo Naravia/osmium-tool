@@ -1,0 +1,39 @@
+[ 0:00] Reading expressions file...
+[ 0:00] Started osmium tags-filter-bool
+[ 0:00]   osmium version 1.19.1 (archive/perf/1-tags-filter-bool-dependency-chunks-4-gb7796ec-changed)
+[ 0:00]   libosmium version 2.23.1
+[ 0:00] Command line options and default settings:
+[ 0:00]   input options:
+[ 0:00]     file name: /mnt/devbox_data/workspace/naravia/osm-pipeline/data/input/brandenburg/snapshots/c4709c69cbb154db39a4d18d1f96dfb0637377a47053d54c78750393e6d93111/brandenburg-latest.osm.pbf
+[ 0:00]     file format: 
+[ 0:00]   output options:
+[ 0:00]     file name: /tmp/opencode/osmium-issue6-downward-brandenburg/depth1-3.osm.pbf
+[ 0:00]     file format: 
+[ 0:00]     generator: reverse-reference-exploration
+[ 0:00]     overwrite: no
+[ 0:00]     fsync: no
+[ 0:00]   other options:
+[ 0:00]     add referenced objects: yes
+[ 0:00]     invert match: no
+[ 0:00]     include parents: yes
+[ 0:00]     maximum parent hops: 2
+[ 0:00]     maximum downward relation hops: 1
+[ 0:00]     remove tags on non-matching objects: yes
+[ 0:00]   looking for tags...
+[ 0:00]     on nodes: yes
+[ 0:00]     on ways: yes
+[ 0:00]     on relations: yes
+[ 0:00] Collecting original matching IDs for parent lookup...
+[ 0:34] Finding parents of the original matches, up to 2 reverse hop(s)...
+[ 0:36] Opening output file...
+[ 0:36] Following references...
+[ 0:36]   Reading input file to find selected relations and bounded members...
+[ 0:37]   Reading input file to find nodes in ways...
+[ 0:39] Done following references.
+[ 0:39] Opening input file...
+[ 0:39] Copying matching objects to output file...
+[ 0:42] Closing output file...
+[ 0:42] Closing input file...
+[ 0:42] Peak memory used: 532 MBytes
+[ 0:42] Needed 6 pass(es) through the input file.
+[ 0:42] Done.

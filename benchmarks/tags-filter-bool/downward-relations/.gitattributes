@@ -1,0 +1,3 @@
+# Preserve original command logs and patch context byte-for-byte as evidence.
+*.stderr.log -whitespace
+tracked-source.diff -whitespace

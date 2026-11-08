@@ -1,0 +1,83 @@
+{
+  "file": {
+    "name": "/tmp/opencode/osmium-issue6-downward-brandenburg/recursive-1.osm.pbf",
+    "format": "PBF",
+    "compression": "none",
+    "size": 14432744
+  },
+  "header": {
+    "boxes": [
+      [
+        11.260643,
+        51.356132,
+        14.894526,
+        53.562948
+      ]
+    ],
+    "with_history": false,
+    "option": {
+      "generator": "reverse-reference-exploration",
+      "osmosis_replication_base_url": "https://download.geofabrik.de/europe/germany/brandenburg-updates",
+      "osmosis_replication_sequence_number": "4937",
+      "osmosis_replication_timestamp": "2026-10-18T20:25:06Z",
+      "pbf_dense_nodes": "true",
+      "pbf_optional_feature_0": "Sort.Type_then_ID",
+      "sorting": "Type_then_ID",
+      "timestamp": "2026-10-18T20:25:06Z"
+    }
+  },
+  "data": {
+    "bbox": [
+      10.5938991,
+      51.2748558,
+      15.3255868,
+      53.797832
+    ],
+    "timestamp": {
+      "first": "2007-03-30T19:23:48Z",
+      "last": "2026-10-18T20:02:36Z"
+    },
+    "objects_ordered": true,
+    "multiple_versions": false,
+    "crc32": "73b734b",
+    "count": {
+      "changesets": 0,
+      "nodes": 1419799,
+      "ways": 60341,
+      "relations": 4188
+    },
+    "minid": {
+      "changesets": 0,
+      "nodes": 458320,
+      "ways": 3996957,
+      "relations": 2442
+    },
+    "maxid": {
+      "changesets": 0,
+      "nodes": 14297729447,
+      "ways": 1569539073,
+      "relations": 21607804
+    },
+    "buffers": {
+      "count": 1873,
+      "size": 117962656,
+      "capacity": 122748928
+    },
+    "metadata": {
+      "all_objects": {
+        "version": true,
+        "timestamp": true,
+        "changeset": false,
+        "user": false,
+        "uid": false
+      },
+      "some_objects": {
+        "version": true,
+        "timestamp": true,
+        "changeset": false,
+        "user": false,
+        "uid": false
+      }
+    }
+  }
+}
