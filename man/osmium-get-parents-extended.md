@@ -1,6 +1,6 @@
 # NAME
 
-osmium-get-parents-extended - find direct parents using sparse seed IDs
+osmium-get-parents-extended - find parents using sparse seed IDs
 
 # SYNOPSIS
 
@@ -9,13 +9,16 @@ osmium-get-parents-extended - find direct parents using sparse seed IDs
 
 # DESCRIPTION
 
-Find objects in the source that directly reference the specified seed IDs.
+Find objects in the source that reference the specified seed IDs.
 Node seeds can have way and relation parents. Way and relation seeds can have
 relation parents. IDs are typed: n1, w1, and r1 are distinct identities.
 
-Only **one reverse hop** is followed. The seed sets are frozen before lookup;
-new parents and their dependencies never become additional seeds. This finds
-explicit membership, not spatial containment. Only parents available in the
+By default **one reverse hop** is followed. **--parent-hops=N** selects a
+maximum of N reverse edges from the original seeds: 2 includes grandparents,
+and 0 disables parent lookup. Each breadth-first level uses a frozen frontier;
+new parents are not expanded until the next level. Previously visited objects
+are not expanded again, so cycles terminate and records are not duplicated.
+This finds explicit membership, not spatial containment. Only parents available in the
 supplied source can be found, not parents outside a regional extract.
 
 Seed IDs may be positional, read from text files, or read from OSM files.
@@ -24,13 +27,16 @@ records always come from the source. Duplicate seed IDs are ignored. An
 explicitly supplied empty seed file produces an empty result.
 
 Sparse hash sets store the IDs without allocating bitmaps over their numeric
-range. The source is scanned once. Source nodes are skipped unless **-s**
-requires them; source ways are skipped when node seeds or qualifying way
+range. At the default depth of 1 the source is scanned once. Higher depths
+use up to one discovery scan per level, followed by a source-order output scan;
+discovery stops early if no unvisited qualifying parents remain. Source nodes
+are skipped unless **-s** requires them; source ways are skipped when node seeds or qualifying way
 parents are absent. These are entity masks, not PBF random-access indexes.
 
 The source must be a positive-ID snapshot, not a history/change file.
-Source STDIN is supported if seed IDs are available separately, with **-F**
-when required. Seed OSM files must be named files. Text IDs may come from
+Source STDIN is supported at depths 0 and 1 if seed IDs are available separately,
+with **-F** when required. Higher depths require a replayable source file.
+Seed OSM files must be named files. Text IDs may come from
 STDIN only when the source is a named file.
 
 Output objects retain their original metadata, tags, and member/node lists,
@@ -55,13 +61,23 @@ seed or parent in the source is not fetched externally.
 -s, --add-self
 : Also include available seed objects from the source. Seed inclusion is not
   restricted by parent predicates. Parent relationships are still recorded
-  when a seed is also a parent.
+  when a seed is also a parent. A seed discovered as a parent through a cycle
+  is included even without this option, but is not expanded again.
+
+--parent-hops=N
+: Maximum reverse parent depth, a non-negative integer (default: 1). Zero
+  selects no parents; combined with **-s**, it returns only the available seed
+  objects. Depth counts membership edges, not source-reader passes. It does
+  not add or limit downward dependencies. Traversal is iterative and stops
+  at exhaustion even if N is large.
 
 --parents-expression=EXPRESSION
 : Apply a Boolean tag predicate to candidate parents. Supports the same
   grammar, atomic semantics, type prefixes, and area eligibility as
   **tags-filter-bool**. Repeated options are ORed. This only restricts parents,
-  not seeds. A node-only parent scope selects no parents.
+  not seeds. The predicate applies at every hop: a nonmatching intermediate
+  parent blocks traversal through it, even if its own parent would match.
+  A node-only parent scope selects no parents.
 
 --parent-relationships=FILE
 : Write a TSV sidecar with columns child, parent, role_percent_escaped, and
@@ -70,7 +86,12 @@ seed or parent in the source is not fetched externally.
   Percent, tab, carriage return, and newline in roles are percent-escaped.
   Each matching occurrence is recorded, including repeated closing nodes and
   multiple roles. This is not a deduplicated child/parent-pair list. Only
-  original-seed relationships are recorded, not downward dependencies.
+  traversed reverse relationships are recorded, not downward dependencies.
+  For depths greater than 1, children can be parents discovered at a previous
+  level. Rows are ordered by hop and then source order within each hop.
+  Cycle-closing and cross-edges to already visited parents are retained once
+  per original member occurrence, without re-expanding that parent. Depth 0
+  writes the header only. The four-column schema is unchanged.
   Requires a named file distinct from inputs and OSM output. Existing files
   require **--overwrite**. **--fsync** applies to OSM output, not the TSV.
 
@@ -90,6 +111,11 @@ Include seed objects and write a child-to-parent mapping:
 
     osmium get-parents-extended source.osm.pbf n1 w11 r24 -s \
       --parent-relationships=edges.tsv -o context.osm.pbf
+
+Find parents and grandparents:
+
+    osmium get-parents-extended source.osm.pbf -I roots.osm.pbf \
+      --parent-hops=2 -o ancestors.osm.pbf
 
 # DIAGNOSTICS
 

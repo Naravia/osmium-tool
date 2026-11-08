@@ -8,7 +8,9 @@
 
 #include <cstring>
 #include <filesystem>
+#include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace reverse_references {
 
@@ -46,12 +48,12 @@ std::string escape_role(const char* role) {
 
 } // namespace
 
-void ObjectIds::add(osmium::item_type type, osmium::object_id_type id) {
+bool ObjectIds::add(osmium::item_type type, osmium::object_id_type id) {
     if (!is_object(type)) {
         throw argument_error{"Expected a node, way, or relation ID."};
     }
     positive(id);
-    m_ids(type).insert(static_cast<osmium::unsigned_object_id_type>(id));
+    return m_ids(type).insert(static_cast<osmium::unsigned_object_id_type>(id)).second;
 }
 
 bool ObjectIds::contains(osmium::item_type type, osmium::object_id_type id) const noexcept {
@@ -210,6 +212,54 @@ bool ParentLookup::matches(const osmium::OSMObject& parent, Relationships* relat
         }
     }
     return found;
+}
+
+std::size_t parse_parent_hops(const std::string& value) {
+    if (value.empty()) throw argument_error{"Parent hops must be a non-negative integer."};
+    std::size_t result = 0;
+    for (const char c : value) {
+        if (c < '0' || c > '9') throw argument_error{"Parent hops must be a non-negative integer."};
+        const auto digit = static_cast<std::size_t>(c - '0');
+        if (result > (std::numeric_limits<std::size_t>::max() - digit) / 10) {
+            throw argument_error{"Parent hop count is too large."};
+        }
+        result = result * 10 + digit;
+    }
+    return result;
+}
+
+ParentSearch find_parents(const osmium::io::File& file, const ObjectIds& seeds,
+                          ParentFilter& filter, std::size_t hops, Relationships* relationships) {
+    if (hops > 1 && (file.filename().empty() || file.filename() == "-")) {
+        throw argument_error{"Multiple parent hops require a replayable source file, not STDIN."};
+    }
+    ParentSearch result;
+    const ObjectIds* frontier = &seeds;
+    ObjectIds current;
+    for (std::size_t hop = 0; hop < hops && !frontier->empty(); ++hop) {
+        ParentLookup lookup{*frontier, filter};
+        if (lookup.types() == osmium::osm_entity_bits::nothing) break;
+        ObjectIds next;
+        ++result.passes;
+        osmium::io::Reader reader{file, lookup.types()};
+        require_snapshot(file, reader.header());
+        while (osmium::memory::Buffer buffer = reader.read()) {
+            for (const auto& parent : buffer.select<osmium::OSMObject>()) {
+                // Match before the visited check: repeated roles, cross-edges,
+                // and cycle-closing edges must not disappear from the sidecar.
+                if (lookup.matches(parent, relationships)) {
+                    const bool first = result.parents.add(parent.type(), parent.id());
+                    if (first && hop + 1 < hops && !seeds.contains(parent.type(), parent.id())) {
+                        next.add(parent.type(), parent.id());
+                    }
+                }
+            }
+        }
+        reader.close();
+        current = std::move(next);
+        frontier = &current;
+    }
+    return result;
 }
 
 void require_snapshot(const osmium::io::File& file, const osmium::io::Header& header) {

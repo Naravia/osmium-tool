@@ -60,27 +60,42 @@ This is a separate command. It does not change the syntax or behavior of
     dependency-only objects lose tags. This option has no effect with **-R**.
 
 \--include-parents
-:   Include objects directly referencing the original matches (after inversion).
-    Seed IDs are frozen before parent lookup. Found parents and geometry-support
-    objects never cause additional reverse hops. Normal downward reference
-    completion then applies to matches and parents, unless **-R** is used.
+:   Include objects referencing the original matches (after inversion), with
+    one reverse hop by default. **--parent-hops** selects a different maximum
+    reverse depth. Each breadth-first level is frozen and visited objects are
+    not expanded again. Geometry-support objects never become reverse seeds.
+    Normal downward reference completion then applies to matches and parents,
+    unless **-R** is used.
     This may considerably expand output, especially for route/boundary parents.
     Requires a replayable positive-ID snapshot file, even with **-R**; history,
     change files, and source STDIN are unsupported in this mode. Uses the same
     in-process engine as **get-parents-extended**, not a subprocess. Existing
     behavior remains unchanged without this option.
 
+\--parent-hops=N
+:   Maximum reverse membership depth from the original matches (default: 1).
+    Zero disables parent lookup; 2 includes parents and grandparents. Requires
+    **--include-parents**. Non-negative integers only. This controls reverse
+    depth, **not** input passes or downward dependency depth. Normal downward
+    completion remains recursive unless **-R** is used. Every intentionally
+    selected ancestor retains its tags under **--remove-tags**.
+
 \--parents-expression=EXPRESSION
 :   Restrict qualifying parents using Boolean tag expressions, for example
     `r/type=multipolygon`. May be repeated; alternatives are ORed. Does not
-    restrict original matches or downward dependencies. Requires
+    restrict original matches or downward dependencies. The predicate also
+    controls traversal at every reverse hop: nonmatching intermediate parents
+    are not traversed. Requires
     **--include-parents**.
 
 \--parent-relationships=FILE
-:   Write original-seed-to-parent membership occurrences as TSV. Columns are
+:   Write traversed reverse membership occurrences as TSV. Columns are
     child, parent, role_percent_escaped, member_index; IDs are typed, indices
     are zero-based, and roles escape percent/tab/CR/LF. Repeated occurrences
-    and roles are retained. Downward dependency edges are not recorded.
+    and roles are retained. At depth greater than 1 children may be parents
+    from earlier levels; rows are ordered by hop then source order. Cyclic
+    edges to previously visited objects are recorded without re-expansion.
+    Depth 0 writes only the header. Downward dependency edges are not recorded.
     Requires **--include-parents**, a named path distinct from inputs/OSM
     output, and **--overwrite** to replace an existing file. **--fsync** applies
     only to OSM output. See **osmium-get-parents-extended**(1).
@@ -219,9 +234,16 @@ Identical decoded predicates share matchers. In general Boolean expressions,
 each evaluated predicate scans an object's tags at most once per filter match;
 later visits reuse its cached result without evaluating skipped branches.
 
-Reference completion retains object-ID tables in memory. With **-R**, matching
-streams over the input without retaining these IDs. Compiled expressions and
-normal I/O buffers are still kept in memory.
+Reference completion retains object-ID tables in memory. Without parent lookup,
+**-R** streams matching over the input without retaining these IDs. Compiled
+expressions and normal I/O buffers are still kept in memory.
+
+With **--include-parents**, original matches and discovered parents are retained
+as sparse typed ID sets. For a maximum depth N, parent discovery needs up to N
+source-reader passes, stopping at exhaustion. Seed collection and ordered output
+add two passes; normal downward completion can add up to three more. Thus **-R**
+uses up to N+2 passes, or normal completion up to N+5 (three and six at the
+default depth of 1). A hop is a membership edge, not an input pass.
 
 
 # EXAMPLES
@@ -236,6 +258,11 @@ Find buildings without a non-empty address, omitting referenced objects:
 
     osmium tags-filter-bool -R input.osm.pbf \
         'a/(building AND NOT addr:housenumber!=)' -o buildings.osm.pbf
+
+Include up to two reverse hops and then complete downward dependencies:
+
+    osmium tags-filter-bool input.osm.pbf 'w/building' \
+        --include-parents --parent-hops=2 -o context.osm.pbf
 
 When generating candidates for downstream rules, preserve every valid
 alternative. A candidate filter must be a safe superset of downstream

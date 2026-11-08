@@ -13,6 +13,7 @@ class CommandGetParentsExtended : public CommandWithSingleOSMInput, public with_
     reverse_references::ParentFilter m_parent_filter;
     std::string m_relationships;
     bool m_add_self = false;
+    std::size_t m_parent_hops = 1;
 
 public:
     explicit CommandGetParentsExtended(const CommandFactory& factory) :

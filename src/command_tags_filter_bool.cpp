@@ -41,6 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 void CommandTagsFilterBool::parse_and_add_expression(const std::string& source) {
@@ -91,7 +92,8 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
     ("invert-match,i", "Invert the sense of matching, exclude objects with matching tags")
     ("omit-referenced,R", "Omit referenced objects")
     ("remove-tags,t", "Remove tags from non-matching objects")
-    ("include-parents", "Include direct parents of the original matching objects")
+    ("include-parents", "Include parents of the original matching objects")
+    ("parent-hops", po::value<std::string>()->default_value("1"), "Maximum reverse parent hops (0 disables lookup)")
     ("parents-expression", po::value<std::vector<std::string>>()->composing(), "Boolean predicate on parents (repeatable, ORed)")
     ("parent-relationships", po::value<std::string>(), "Write occurrence-level child/parent TSV")
     ;
@@ -127,10 +129,11 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
     setup_output_file(vm);
 
     m_include_parents = vm.count("include-parents") != 0;
-    if (!m_include_parents && (vm.count("parents-expression") || vm.count("parent-relationships"))) {
+    if (!m_include_parents && (vm.count("parents-expression") || vm.count("parent-relationships") || !vm["parent-hops"].defaulted())) {
         throw argument_error{"Parent options require --include-parents."};
     }
-    if (m_include_parents && m_input_filename == "-") {
+    m_parent_hops = reverse_references::parse_parent_hops(vm["parent-hops"].as<std::string>());
+    if (m_include_parents && (m_input_filename.empty() || m_input_filename == "-")) {
         throw argument_error{"--include-parents requires a replayable source file, not STDIN."};
     }
     if (m_include_parents) {
@@ -185,7 +188,8 @@ void CommandTagsFilterBool::show_arguments() {
     m_vout << "  other options:\n";
     m_vout << "    add referenced objects: " << yes_no(m_add_referenced_objects);
     m_vout << "    invert match: " << yes_no(m_invert_match);
-    m_vout << "    include direct parents: " << yes_no(m_include_parents);
+    m_vout << "    include parents: " << yes_no(m_include_parents);
+    if (m_include_parents) m_vout << "    maximum parent hops: " << m_parent_hops << '\n';
     if (m_add_referenced_objects) {
         m_vout << "    remove tags on non-matching objects: " << yes_no(m_remove_tags);
     }
@@ -375,19 +379,11 @@ void CommandTagsFilterBool::find_parent_objects() {
         }
     }
     seeds.close();
-    reverse_references::ParentLookup lookup{m_root_ids, m_parent_filter};
     reverse_references::Relationships relationships{m_relationships};
-    if (lookup.types() != osmium::osm_entity_bits::nothing) {
-        m_vout << "Finding direct parents of the frozen original matches...\n";
-        ++m_count_passes;
-        osmium::io::Reader parents{m_input_file, lookup.types()};
-        while (osmium::memory::Buffer buffer = parents.read()) {
-            for (const auto& object : buffer.select<osmium::OSMObject>()) {
-                if (lookup.matches(object, &relationships)) m_parent_ids.add(object.type(), object.id());
-            }
-        }
-        parents.close();
-    }
+    m_vout << "Finding parents of the original matches, up to " << m_parent_hops << " reverse hop(s)...\n";
+    auto found = reverse_references::find_parents(m_input_file, m_root_ids, m_parent_filter, m_parent_hops, &relationships);
+    m_count_passes += found.passes;
+    m_parent_ids = std::move(found.parents);
     relationships.close();
 }
 

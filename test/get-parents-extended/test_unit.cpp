@@ -4,13 +4,58 @@
 #include "reverse_references/parent_lookup.hpp"
 
 #include <osmium/builder/attr.hpp>
+#include <osmium/io/file.hpp>
 #include <osmium/memory/buffer.hpp>
+
+#include <limits>
+
+TEST_CASE("Parent hop limits reject malformed and overflowing values", "[reverse-references]") {
+    REQUIRE(reverse_references::parse_parent_hops("0") == 0);
+    REQUIRE(reverse_references::parse_parent_hops("1") == 1);
+    REQUIRE(reverse_references::parse_parent_hops("002") == 2);
+    REQUIRE(reverse_references::parse_parent_hops(std::to_string(std::numeric_limits<std::size_t>::max())) == std::numeric_limits<std::size_t>::max());
+    for (const auto* value : {"", "-1", "+1", "1.5", "x", " 1", "1 ", "184467440737095516160"}) {
+        REQUIRE_THROWS_AS(reverse_references::parse_parent_hops(value), argument_error);
+    }
+}
+
+TEST_CASE("Breadth-first parent traversal stops on visited frontiers", "[reverse-references]") {
+    const osmium::io::File file{"test/tags-filter-bool/input.osm.opl"};
+    reverse_references::ObjectIds seeds;
+    seeds.add(osmium::item_type::node, 6);
+    reverse_references::ParentFilter filter;
+    auto none = reverse_references::find_parents(file, seeds, filter, 0);
+    REQUIRE(none.parents.empty());
+    REQUIRE(none.passes == 0);
+    auto first = reverse_references::find_parents(file, seeds, filter, 1);
+    REQUIRE(first.parents.contains(osmium::item_type::way, 12));
+    REQUIRE(first.parents.contains(osmium::item_type::relation, 20));
+    REQUIRE_FALSE(first.parents.contains(osmium::item_type::relation, 22));
+    auto second = reverse_references::find_parents(file, seeds, filter, 2);
+    REQUIRE(second.parents.contains(osmium::item_type::relation, 22));
+    REQUIRE(second.parents.contains(osmium::item_type::relation, 23));
+    REQUIRE_FALSE(second.parents.contains(osmium::item_type::relation, 24));
+    auto all = reverse_references::find_parents(file, seeds, filter, 50);
+    REQUIRE(all.parents.size(osmium::item_type::way) == 1);
+    REQUIRE(all.parents.size(osmium::item_type::relation) == 5);
+    REQUIRE(all.passes == 5);
+    REQUIRE(seeds.size(osmium::item_type::node) == 1);
+    REQUIRE_FALSE(seeds.has(osmium::item_type::way));
+
+    reverse_references::ObjectIds cycle_seeds;
+    cycle_seeds.add(osmium::item_type::relation, 24);
+    auto cycle = reverse_references::find_parents(file, cycle_seeds, filter, std::numeric_limits<std::size_t>::max());
+    REQUIRE(cycle.parents.size(osmium::item_type::relation) == 2);
+    REQUIRE(cycle.parents.contains(osmium::item_type::relation, 24));
+    REQUIRE(cycle.parents.contains(osmium::item_type::relation, 25));
+    REQUIRE(cycle.passes == 2);
+}
 
 TEST_CASE("Sparse reverse IDs are typed and positive", "[reverse-references]") {
     reverse_references::ObjectIds ids;
     REQUIRE(ids.empty());
-    ids.add(osmium::item_type::node, 1);
-    ids.add(osmium::item_type::node, 1);
+    REQUIRE(ids.add(osmium::item_type::node, 1));
+    REQUIRE_FALSE(ids.add(osmium::item_type::node, 1));
     REQUIRE(ids.size(osmium::item_type::node) == 1);
     REQUIRE(ids.contains(osmium::item_type::node, 1));
     REQUIRE_FALSE(ids.contains(osmium::item_type::way, 1));

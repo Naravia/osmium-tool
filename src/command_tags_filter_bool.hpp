@@ -54,11 +54,12 @@ class CommandTagsFilterBool : public CommandWithSingleOSMInput, public with_osm_
     osmium::nwr_array<osmium::index::IdSetDense<osmium::unsigned_object_id_type>> m_matching_ids;
     osmium::nwr_array<osmium::index::IdSetDense<osmium::unsigned_object_id_type>> m_referenced_ids;
 
-    int m_count_passes = 0;
+    std::size_t m_count_passes = 0;
     bool m_add_referenced_objects = true;
     bool m_invert_match = false;
     bool m_remove_tags = false;
     bool m_include_parents = false;
+    std::size_t m_parent_hops = 1;
 
     osmium::osm_entity_bits::type get_needed_types() const;
 

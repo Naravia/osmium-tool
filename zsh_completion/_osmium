@@ -336,6 +336,7 @@ _osmium-get-parents-extended() {
         '*--id-osm-file[read OSM seed IDs]:file:_files' \
         '-s[include seeds]' '--add-self[include seeds]' \
         '*--parents-expression[Boolean parent predicate]:expression:' \
+        '--parent-hops[maximum reverse hops, default 1]:non-negative integer:' \
         '--parent-relationships[write relationship TSV]:file:_files' \
         '--progress[enable progress]' '--no-progress[disable progress]' \
         '*:typed seed IDs:'
@@ -485,7 +486,8 @@ _osmium-tags-filter-bool() {
         '(-R)--omit-referenced[omit referenced objects]' \
         '(--remove-tags)-t[remove tags from referenced-only objects]' \
         '(-t)--remove-tags[remove tags from referenced-only objects]' \
-        '--include-parents[include direct parents of original matches]' \
+        '--include-parents[include parents of original matches]' \
+        '--parent-hops[maximum reverse hops, default 1]:non-negative integer:' \
         '*--parents-expression[Boolean parent predicate]:expression:' \
         '--parent-relationships[write relationship TSV]:file:_files' \
         '(--progress)--no-progress[disable progress bar]' \

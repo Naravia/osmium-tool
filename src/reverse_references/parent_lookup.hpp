@@ -22,7 +22,7 @@ class ObjectIds {
     osmium::nwr_array<std::unordered_set<osmium::unsigned_object_id_type>> m_ids;
 
 public:
-    void add(osmium::item_type type, osmium::object_id_type id);
+    bool add(osmium::item_type type, osmium::object_id_type id);
     bool contains(osmium::item_type type, osmium::object_id_type id) const noexcept;
     bool empty() const noexcept;
     bool has(osmium::item_type type) const noexcept;
@@ -69,6 +69,17 @@ public:
     osmium::osm_entity_bits::type types() const noexcept;
     bool matches(const osmium::OSMObject& parent, Relationships* relationships = nullptr);
 };
+
+struct ParentSearch {
+    ObjectIds parents;
+    std::size_t passes = 0;
+};
+
+// Each level uses a frozen frontier. Parent filters prune traversal at every
+// level; already visited parents can still contribute relationship edges.
+ParentSearch find_parents(const osmium::io::File& file, const ObjectIds& seeds,
+                          ParentFilter& filter, std::size_t hops, Relationships* relationships = nullptr);
+std::size_t parse_parent_hops(const std::string& value);
 
 void require_snapshot(const osmium::io::File& file, const osmium::io::Header& header);
 void read_seed_file(const std::string& filename, ObjectIds& ids);

@@ -24,6 +24,7 @@ bool CommandGetParentsExtended::setup(const std::vector<std::string>& arguments)
     ("id-file,i", po::value<std::vector<std::string>>()->composing(), "Read typed IDs from text file")
     ("id-osm-file,I", po::value<std::vector<std::string>>()->composing(), "Read seed IDs from OSM file")
     ("add-self,s", "Also include the seeds themselves from the source")
+    ("parent-hops", po::value<std::string>()->default_value("1"), "Maximum reverse parent hops (0 disables lookup)")
     ("parents-expression", po::value<std::vector<std::string>>()->composing(), "Boolean predicate on parents (repeatable, ORed)")
     ("parent-relationships", po::value<std::string>(), "Write occurrence-level child/parent TSV")
     ;
@@ -48,6 +49,10 @@ bool CommandGetParentsExtended::setup(const std::vector<std::string>& arguments)
     setup_input_file(vm);
     setup_output_file(vm);
     m_add_self = vm.count("add-self") != 0;
+    m_parent_hops = reverse_references::parse_parent_hops(vm["parent-hops"].as<std::string>());
+    if (m_parent_hops > 1 && (m_input_filename.empty() || m_input_filename == "-")) {
+        throw argument_error{"Multiple parent hops require a replayable source file, not STDIN."};
+    }
     if (!vm.count("ids") && !vm.count("id-file") && !vm.count("id-osm-file")) {
         throw argument_error{"Specify seed IDs, --id-file, or --id-osm-file."};
     }
@@ -123,12 +128,41 @@ void CommandGetParentsExtended::show_arguments() {
     show_single_input_arguments(m_vout);
     show_output_arguments(m_vout);
     m_vout << "  add self: " << yes_no(m_add_self);
+    m_vout << "  maximum parent hops: " << m_parent_hops << '\n';
     for (const auto type : {osmium::item_type::node, osmium::item_type::way, osmium::item_type::relation}) {
         m_vout << "  seed " << osmium::item_type_to_name(type) << " IDs: " << m_seeds.size(type) << '\n';
     }
 }
 
 bool CommandGetParentsExtended::run() {
+    // Preserve the original one-hop streaming path, including STDIN support
+    // and source-order edge output. Other depths need an ordered output scan.
+    if (m_parent_hops != 1) {
+        reverse_references::Relationships relationships{m_relationships};
+        auto found = reverse_references::find_parents(m_input_file, m_seeds, m_parent_filter, m_parent_hops, &relationships);
+        relationships.close();
+        auto types = found.parents.types();
+        if (m_add_self) types |= m_seeds.types();
+        osmium::io::Reader reader{m_input_file, types};
+        auto header = reader.header();
+        reverse_references::require_snapshot(m_input_file, header);
+        setup_header(header);
+        osmium::io::Writer writer{m_output_file, header, m_output_overwrite, m_fsync};
+        osmium::ProgressBar progress{reader.file_size(), display_progress()};
+        while (osmium::memory::Buffer buffer = reader.read()) {
+            progress.update(reader.offset());
+            for (const auto& object : buffer.select<osmium::OSMObject>()) {
+                if (found.parents.contains(object.type(), object.id()) ||
+                    (m_add_self && m_seeds.contains(object.type(), object.id()))) writer(object);
+            }
+        }
+        progress.done();
+        writer.close();
+        reader.close();
+        m_vout << "Parent discovery needed " << found.passes << " pass(es); one further pass wrote the output.\n";
+        show_memory_used();
+        return true;
+    }
     reverse_references::ParentLookup lookup{m_seeds, m_parent_filter};
     auto types = lookup.types();
     if (m_add_self) types |= m_seeds.types();
