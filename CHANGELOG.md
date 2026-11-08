@@ -10,8 +10,45 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 - Add the standalone `tags-filter-bool` command for Boolean tag expressions
   with AND, OR, NOT, and parentheses. The existing `tags-filter` is unchanged.
+- Add `get-parents-extended` for reverse membership lookup using sparse,
+  typed seed IDs from positional arguments or text/OSM files, with optional
+  seed inclusion through `--add-self`. Downward dependencies are not added
+  by this standalone command.
+- Add `tags-filter-bool --include-parents` to include parents of the original
+  matches after inversion, followed by normal downward dependency completion
+  unless `--omit-referenced/-R` is used. Explicitly selected parents retain
+  their tags under `--remove-tags`; dependency-only objects do not become
+  reverse-lookup seeds.
+- Add repeatable Boolean `--parents-expression` predicates and occurrence-level
+  `--parent-relationships` TSV export to both parent-lookup interfaces. The
+  sidecar preserves typed child/parent IDs, escaped roles, and original member
+  indices, including repeated memberships; downward dependency edges are omitted.
+- Add `--parent-hops=N` to both interfaces, defaulting to one reverse hop.
+  Zero disables parent discovery; two includes parents and grandparents.
+  Breadth-first traversal stops at the limit or exhaustion without repeatedly
+  expanding cycles. Parent predicates apply at every hop and prune paths through
+  nonmatching intermediates. Downward dependency depth is unchanged. See the
+  [parent-hop validation report](benchmarks/reverse-references/parent-hops-validation.md).
+- Add manuals and Bash/Zsh completions for the extension commands and options.
+  Parent lookup requires positive-ID snapshots; integrated lookup and standalone
+  lookup above one hop require replayable source files.
 
 ### Changed
+
+- Optimize Boolean tag matching with precomputed empty-tag results, a single
+  tag-list traversal for atomic OR filters, shared identical predicates, and
+  reusable per-match predicate-result caches. Preserve short-circuit evaluation
+  and existing atomic matching semantics. See the
+  [predicate-cache report](benchmarks/tags-filter-bool/predicate-cache.md).
+- Reduce `tags-filter-bool` matching and dependency bitmap chunks from 4 MiB to
+  1 KiB using an extension-local libosmium template instantiation. Three paired
+  Brandenburg two-hop runs showed a 90.1% reduction in median peak RSS
+  (2,163.8 to 214.9 MiB) and a 2.0% reduction in median elapsed time, with
+  byte-identical PBF and relationship TSV output. Traversal and input-pass counts
+  are unchanged; results depend on ID distribution. See the
+  [dependency-chunk benchmark](benchmarks/reverse-references/dependency-chunks.md).
+- Keep the new lookup and performance implementations local to the extensions;
+  original osmium command implementations and libosmium defaults are unchanged.
 
 ### Fixed
 
@@ -822,4 +859,3 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 [1.1.1]: https://github.com/osmcode/osmium-tool/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/osmcode/osmium-tool/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/osmcode/osmium-tool/compare/v1.0.0...v1.0.1
-
