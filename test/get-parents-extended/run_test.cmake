@@ -1,4 +1,7 @@
 set(input "${source}/input.osm.opl")
+if(case STREQUAL "integrated-id-chunks")
+    set(input "${source}/input-id-chunks.osm.opl")
+endif()
 set(output "${CMAKE_CURRENT_BINARY_DIR}/${case}.osm.opl")
 set(extra)
 list(FIND flags "--parent-hops=1" explicit_one)
@@ -83,7 +86,15 @@ elseif(case STREQUAL "integrated-hops-edges")
         message(FATAL_ERROR "Wrong integrated traversal edges: ${relationships}")
     endif()
 endif()
-if(case STREQUAL "integrated-node-strip")
+if(case STREQUAL "integrated-id-chunks")
+    if(NOT contents MATCHES "n4294967297 [^\n]* T x" OR
+       NOT contents MATCHES "w8191 [^\n]* Tselect=yes N" OR
+       NOT contents MATCHES "w8192 [^\n]* T N" OR
+       NOT contents MATCHES "r8192 [^\n]* Ttype=site M" OR
+       NOT contents MATCHES "r33554432 [^\n]* T M")
+        message(FATAL_ERROR "Chunk boundaries, large IDs, or dependency cycles broke tag provenance")
+    endif()
+elseif(case STREQUAL "integrated-node-strip")
     if(NOT contents MATCHES "n4 [^\n]* Tkey1=" OR NOT contents MATCHES "n2 [^\n]* T x" OR
        NOT contents MATCHES "w11 [^\n]* Tbuilding=yes N")
         message(FATAL_ERROR "Roots/parents must retain tags and dependencies must lose them")

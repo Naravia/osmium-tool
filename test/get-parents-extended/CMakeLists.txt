@@ -53,6 +53,7 @@ check_parent_lookup(integrated-hops-exhaustion integrated "-R;--parent-hops=50" 
 check_parent_lookup(integrated-hops-strip integrated "-t;--parent-hops=2" "r/type=multipolygon" "n3;n4;n6;w11;r20;r23;r24;r25")
 check_parent_lookup(integrated-hops-no-dependency-reversal integrated "-R;--parent-hops=0" "n/key3!=" "n1;n4")
 check_parent_lookup(integrated-hops-edges integrated "-R;--parent-hops=50" "r/type=multipolygon" "r20;r23;r24;r25")
+check_parent_lookup(integrated-id-chunks integrated "-t;--parent-hops=2" "w/select=yes" "n8191;n8192;n4294967297;w8191;w8192;r8191;r8192;r33554432")
 
 add_test(NAME get-parents-extended-errors
     COMMAND ${CMAKE_COMMAND} "-Dosmium=$<TARGET_FILE:osmium>"

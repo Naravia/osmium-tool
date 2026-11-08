@@ -238,6 +238,13 @@ Reference completion retains object-ID tables in memory. Without parent lookup,
 **-R** streams matching over the input without retaining these IDs. Compiled
 expressions and normal I/O buffers are still kept in memory.
 
+The Boolean extension's matching and dependency bitmaps allocate 1 KiB chunks
+(8,192 numeric IDs per chunk), rather than libosmium's default 4 MiB chunks.
+This reduces wasted bitmap storage for sparse regional selections. Memory still
+depends on the ID distribution, pointer-directory size, and I/O buffers; it is
+not a fixed per-object bound. This tuning does not change original commands or
+libosmium defaults, and does not reduce the number of input passes.
+
 With **--include-parents**, original matches and discovered parents are retained
 as sparse typed ID sets. For a maximum depth N, parent discovery needs up to N
 source-reader passes, stopping at exhaustion. Seed collection and ordered output

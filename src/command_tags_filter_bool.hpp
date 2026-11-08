@@ -25,10 +25,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "cmd.hpp" // IWYU pragma: export
 #include "tags_filter_bool/expression.hpp"
+#include "tags_filter_bool/id_set.hpp"
 #include "reverse_references/parent_lookup.hpp"
 
 #include <osmium/fwd.hpp>
-#include <osmium/index/id_set.hpp>
 #include <osmium/index/nwr_array.hpp>
 #include <osmium/index/relations_map.hpp>
 #include <osmium/io/reader.hpp>
@@ -51,8 +51,8 @@ class CommandTagsFilterBool : public CommandWithSingleOSMInput, public with_osm_
     reverse_references::ParentFilter m_parent_filter;
     std::string m_relationships;
 
-    osmium::nwr_array<osmium::index::IdSetDense<osmium::unsigned_object_id_type>> m_matching_ids;
-    osmium::nwr_array<osmium::index::IdSetDense<osmium::unsigned_object_id_type>> m_referenced_ids;
+    osmium::nwr_array<tags_filter_bool::ObjectIdSet> m_matching_ids;
+    osmium::nwr_array<tags_filter_bool::ObjectIdSet> m_referenced_ids;
 
     std::size_t m_count_passes = 0;
     bool m_add_referenced_objects = true;

@@ -2,6 +2,8 @@
 set(input "${source}/input.osm.opl")
 if(case STREQUAL "invert-unscoped-ways")
     set(input "${source}/input-no-relations.osm.opl")
+elseif(case MATCHES "^id-chunks")
+    set(input "${source}/input-id-chunks.osm.opl")
 elseif(case STREQUAL "crlf")
     file(READ "${source}/expressions.txt" expressions)
     string(REPLACE "\n" "\r\n" expressions "${expressions}")
@@ -34,7 +36,12 @@ if(NOT "${actual}" STREQUAL "${expected}")
     message(FATAL_ERROR "Expected ${expected}, got ${actual}:\n${output}")
 endif()
 
-if(case STREQUAL "compound-t")
+if(case STREQUAL "id-chunks-strip")
+    if(NOT output MATCHES "n4294967297 [^\n]* T x" OR
+       NOT output MATCHES "w8191 [^\n]* Tselect=yes N")
+        message(FATAL_ERROR "Chunk boundaries or large IDs broke tag provenance:\n${output}")
+    endif()
+elseif(case STREQUAL "compound-t")
     if(NOT output MATCHES "n1 [^\n]* Tkey1=value1,key2=value2,key3=yes x" OR
        NOT output MATCHES "n4 [^\n]* T x" OR
        NOT output MATCHES "w11 [^\n]* T N")

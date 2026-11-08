@@ -54,6 +54,15 @@ these hop counts limits downward dependency completion. This is not a fused
 single-pass operation. Sparse parent membership does not remove memory used
 by the existing downward-reference ID tables.
 
+The Boolean extension now uses `tags_filter_bool::ObjectIdSet` for matching and
+downward-reference tables: the existing libosmium `IdSetDense` template with
+`chunk_bits=10` (1 KiB chunks covering 8,192 IDs), rather than its default 22
+(4 MiB). This is an extension-local instantiation, not a library/default change.
+Traversal, cycle detection, tag provenance, and input-pass counts are unchanged.
+Smaller chunks reduce sparse bitmap waste but increase allocation count and
+pointer-directory size. These are still numeric-range-indexed bitmaps, not
+fully sparse sets with memory bounded only by selected-object count.
+
 The new modes require positive-ID snapshots, not history/change inputs.
 Standalone source STDIN works at depths 0/1 with independently supplied seeds;
 multi-hop standalone and integrated lookup require a replayable source.

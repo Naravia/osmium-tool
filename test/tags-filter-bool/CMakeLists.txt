@@ -41,6 +41,8 @@ check_tags_filter_bool(stdin "-R" "${COMPOUND}" "n1;n2;w10;w12;r20;r22")
 check_tags_filter_bool(alternatives "-R" "n/key3!=;w/key4!=" "n1;n4;w12")
 check_tags_filter_bool(invert-node-scope "-i" "n/key1" "n1;n2;n3;n4;n5;n6;n8;n9;w10;w11;w12;w13;w14;r20;r21;r22;r23;r24;r25")
 check_tags_filter_bool(invert-unscoped-ways "-i" "n/note" "n1;n2;w1")
+check_tags_filter_bool(id-chunks "" "w/select=yes" "n8191;n8192;n4294967297;w8191")
+check_tags_filter_bool(id-chunks-strip "-t" "w/select=yes" "n8191;n8192;n4294967297;w8191")
 
 foreach(_script errors differential)
     add_test(NAME tags-filter-bool-${_script}

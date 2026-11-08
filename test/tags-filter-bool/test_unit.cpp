@@ -2,6 +2,7 @@
 #include "test.hpp" // IWYU pragma: keep
 
 #include "tags_filter_bool/expression.hpp"
+#include "tags_filter_bool/id_set.hpp"
 
 #include <osmium/builder/attr.hpp>
 #include <osmium/memory/buffer.hpp>
@@ -52,6 +53,44 @@ BooleanFormula generate_formula(std::mt19937& random, unsigned int depth) {
 }
 
 } // anonymous namespace
+
+TEST_CASE("Boolean dependency bitmaps allocate one KiB chunks", "[tags-filter-bool]") {
+    tags_filter_bool::ObjectIdSet ids;
+    REQUIRE(ids.empty());
+    REQUIRE(ids.used_memory() == 0);
+    ids.set(1);
+    ids.set(8191);
+    REQUIRE(ids.used_memory() == 1024);
+    REQUIRE(ids.check_and_set(8192));
+    REQUIRE(ids.used_memory() == 2048);
+    REQUIRE_FALSE(ids.check_and_set(8192));
+    REQUIRE(ids.size() == 3);
+    REQUIRE(ids.get(8191));
+    REQUIRE(ids.get(8192));
+    REQUIRE_FALSE(ids.get(8193));
+    ids.clear();
+    REQUIRE(ids.empty());
+    REQUIRE(ids.used_memory() == 0);
+}
+
+TEST_CASE("Boolean dependency bitmaps preserve scattered 64-bit IDs and iteration", "[tags-filter-bool]") {
+    using Id = osmium::unsigned_object_id_type;
+    const std::vector<Id> expected{1, 8191, 8192, 33554431, 33554432, (Id{1} << 32) + 8192};
+    tags_filter_bool::ObjectIdSet ids;
+    for (auto it = expected.rbegin(); it != expected.rend(); ++it) {
+        REQUIRE(ids.check_and_set(*it));
+        REQUIRE_FALSE(ids.check_and_set(*it));
+    }
+    REQUIRE(ids.size() == expected.size());
+    std::vector<Id> actual;
+    for (const auto id : ids) actual.push_back(id);
+    REQUIRE(actual == expected);
+    REQUIRE_FALSE(ids.get((Id{1} << 32) + 8191));
+    REQUIRE_FALSE(ids.get(16384));
+    auto moved = std::move(ids);
+    REQUIRE(moved.size() == expected.size());
+    for (const auto id : expected) REQUIRE(moved.get(id));
+}
 
 TEST_CASE("Boolean tag predicates match across distinct tags", "[tags-filter-bool]") {
     const std::string source{"key1=value1 AND key2=value2 AND (key3!= OR key4!=)"};

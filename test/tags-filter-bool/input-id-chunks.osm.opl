@@ -1,0 +1,8 @@
+n8191 v1 dV c0 t i0 u Tname=first x1 y1
+n8192 v1 dV c0 t i0 u Tname=second x2 y1
+n4294967297 v1 dV c0 t i0 u Tname=large x3 y1
+w8191 v1 dV c0 t i0 u Tselect=yes Nn8191,n8192,n4294967297
+w8192 v1 dV c0 t i0 u Tdependency=yes Nn8192,n4294967297
+r8191 v1 dV c0 t i0 u Ttype=multipolygon Mw8191@outer,w8192@inner
+r8192 v1 dV c0 t i0 u Ttype=site Mr8191@,r33554432@
+r33554432 v1 dV c0 t i0 u Tdependency=yes Mr8192@
