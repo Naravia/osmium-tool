@@ -121,7 +121,7 @@ __osmium_opts()
         tags-filter)
             echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced";;
         tags-filter-bool)
-            echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced -t --remove-tags --include-parents --parent-hops --parents-expression --parent-relationships";;
+            echo "$common $input $outfmt $output $progress -e --expressions -i --invert-match -R --omit-referenced -t --remove-tags --include-parents --parent-hops --parents-expression --parent-relationships --downward-relation-hops";;
         time-filter)
             echo "$common $input $outfmt $output $progress";;
     esac
@@ -154,7 +154,7 @@ __osmium_complete_arg()
         --default-type)
             COMPREPLY=( $(compgen -W "$_osmium_object_types" -- "$cur") )
             return 0;;
-        --parent-hops|--parents-expression)
+        --parent-hops|--parents-expression|--downward-relation-hops)
             COMPREPLY=()
             return 0;;
         --clean)

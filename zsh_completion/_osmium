@@ -486,6 +486,7 @@ _osmium-tags-filter-bool() {
         '(-R)--omit-referenced[omit referenced objects]' \
         '(--remove-tags)-t[remove tags from referenced-only objects]' \
         '(-t)--remove-tags[remove tags from referenced-only objects]' \
+        '(-R --omit-referenced)--downward-relation-hops[maximum downward relation-member hops, default recursive]:non-negative integer:' \
         '--include-parents[include parents of original matches]' \
         '--parent-hops[maximum reverse hops, default 1]:non-negative integer:' \
         '*--parents-expression[Boolean parent predicate]:expression:' \

@@ -28,6 +28,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   Breadth-first traversal stops at the limit or exhaustion without repeatedly
   expanding cycles. Parent predicates apply at every hop and prune paths through
   nonmatching intermediates. Downward dependency depth is unchanged.
+- Add `tags-filter-bool --downward-relation-hops=N` to bound relation-member
+  materialization independently of reverse parent depth. Selected matches and
+  parents each receive the full budget; retained ways still include available
+  nodes. Relation headers/member lists are preserved at the boundary. Recursive
+  completion remains the default; combining the limit with `-R` is rejected.
 - Add manuals and Bash/Zsh completions for the extension commands and options.
   Parent lookup requires positive-ID snapshots; integrated lookup and standalone
   lookup above one hop require replayable source files.

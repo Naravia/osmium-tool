@@ -40,7 +40,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <cstring>
 #include <fstream>
+#include <limits>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -91,6 +93,7 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
     ("expressions,e", po::value<std::string>(), "Read Boolean expressions from file")
     ("invert-match,i", "Invert the sense of matching, exclude objects with matching tags")
     ("omit-referenced,R", "Omit referenced objects")
+    ("downward-relation-hops", po::value<std::string>(), "Maximum downward relation-member hops (default: recursive)")
     ("remove-tags,t", "Remove tags from non-matching objects")
     ("include-parents", "Include parents of the original matching objects")
     ("parent-hops", po::value<std::string>()->default_value("1"), "Maximum reverse parent hops (0 disables lookup)")
@@ -152,6 +155,23 @@ bool CommandTagsFilterBool::setup(const std::vector<std::string>& arguments) {
         reverse_references::check_relationship_path(m_relationships, protected_files, m_output_overwrite == osmium::io::overwrite::allow);
     }
 
+    if (vm.count("downward-relation-hops")) {
+        if (vm.count("omit-referenced")) {
+            throw argument_error{"--downward-relation-hops can not be combined with --omit-referenced/-R."};
+        }
+        const auto& value = vm["downward-relation-hops"].as<std::string>();
+        if (value.empty()) throw argument_error{"Downward relation hops must be a non-negative integer."};
+        std::size_t hops = 0;
+        for (const char c : value) {
+            if (c < '0' || c > '9') throw argument_error{"Downward relation hops must be a non-negative integer."};
+            const auto digit = static_cast<std::size_t>(c - '0');
+            if (hops > (std::numeric_limits<std::size_t>::max() - digit) / 10) {
+                throw argument_error{"Downward relation hop count is too large."};
+            }
+            hops = hops * 10 + digit;
+        }
+        m_downward_relation_hops = hops;
+    }
     if (vm.count("omit-referenced")) {
         m_add_referenced_objects = false;
     } else if (m_input_filename == "-") {
@@ -190,6 +210,7 @@ void CommandTagsFilterBool::show_arguments() {
     m_vout << "    invert match: " << yes_no(m_invert_match);
     m_vout << "    include parents: " << yes_no(m_include_parents);
     if (m_include_parents) m_vout << "    maximum parent hops: " << m_parent_hops << '\n';
+    if (m_downward_relation_hops) m_vout << "    maximum downward relation hops: " << *m_downward_relation_hops << '\n';
     if (m_add_referenced_objects) {
         m_vout << "    remove tags on non-matching objects: " << yes_no(m_remove_tags);
     }
@@ -330,6 +351,67 @@ void CommandTagsFilterBool::find_nodes_and_ways_in_relations() {
     reader.close();
 }
 
+void CommandTagsFilterBool::find_bounded_relation_members() {
+    using RelationIds = std::unordered_set<osmium::unsigned_object_id_type>;
+    RelationIds next;
+    const auto add_members = [&](const osmium::Relation& relation) {
+        for (const auto& member : relation.members()) {
+            if (member.type() == osmium::item_type::relation) {
+                if (m_referenced_ids(member.type()).check_and_set(member.positive_ref()) &&
+                    !m_matching_ids(member.type()).get(member.positive_ref())) {
+                    next.insert(member.positive_ref());
+                }
+            } else if (member.type() == osmium::item_type::node || member.type() == osmium::item_type::way) {
+                m_referenced_ids(member.type()).set(member.positive_ref());
+            }
+        }
+    };
+
+    // Discover every intentionally selected relation before expanding nested dependencies.
+    // Their direct members can already be retained in this first pass. This also
+    // preserves matching provenance at depth zero and for selected nested roots.
+    m_vout << "  Reading input file to find selected relations and bounded members...\n";
+    ++m_count_passes;
+    osmium::io::Reader roots{m_input_file, osmium::osm_entity_bits::relation};
+    while (osmium::memory::Buffer buffer = roots.read()) {
+        for (const auto& relation : buffer.select<osmium::Relation>()) {
+            if (m_include_parents ? (m_root_ids.contains(relation.type(), relation.id()) || m_parent_ids.contains(relation.type(), relation.id()))
+                                  : matches_relation(relation) != m_invert_match) {
+                m_matching_ids(relation.type()).set(relation.positive_id());
+                if (*m_downward_relation_hops != 0) add_members(relation);
+            }
+        }
+    }
+    roots.close();
+
+    // A forward-referenced relation might subsequently prove to be a selected
+    // root. It has already received its full budget, so must not be expanded again.
+    for (auto it = next.begin(); it != next.end();) {
+        if (m_matching_ids(osmium::item_type::relation).get(*it)) {
+            it = next.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    // Frozen breadth-first frontiers guarantee the shallowest reachable depth.
+    // Only reached IDs are stored; no all-relations graph or recursive closure
+    // is built. Seen relations (including cycles) are never expanded twice.
+    for (std::size_t hop = 1; hop < *m_downward_relation_hops && !next.empty(); ++hop) {
+        const RelationIds frontier = std::move(next);
+        next.clear();
+        m_vout << "  Reading input file for downward relation hop " << hop + 1 << "...\n";
+        ++m_count_passes;
+        osmium::io::Reader reader{m_input_file, osmium::osm_entity_bits::relation};
+        while (osmium::memory::Buffer buffer = reader.read()) {
+            for (const auto& relation : buffer.select<osmium::Relation>()) {
+                if (frontier.find(relation.positive_id()) != frontier.end()) add_members(relation);
+            }
+        }
+        reader.close();
+    }
+}
+
 void CommandTagsFilterBool::find_nodes_in_ways() {
     m_vout << "  Reading input file to find nodes in ways...\n";
     ++m_count_passes;
@@ -352,7 +434,10 @@ void CommandTagsFilterBool::find_referenced_objects() {
     m_vout << "Following references...\n";
     bool todo = m_include_parents ? (m_root_ids.has(osmium::item_type::relation) || m_parent_ids.has(osmium::item_type::relation))
                                  : (!m_filters(osmium::item_type::relation).empty() || !m_area_filters.empty() || m_invert_match);
-    if (todo) {
+    if (todo && m_downward_relation_hops) {
+        find_bounded_relation_members();
+        todo = false;
+    } else if (todo) {
         todo = find_relations_in_relations();
     }
     if (todo) {

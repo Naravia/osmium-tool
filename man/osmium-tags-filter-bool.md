@@ -23,7 +23,8 @@ conditions that must all hold inside one expression. Command-line expressions
 are evaluated first, followed by file expressions, in their given order.
 
 Referenced nodes of matching ways and members of matching relations are also
-included, recursively, unless **\--omit-referenced/-R** is used. Referenced
+included, recursively by default. **--downward-relation-hops** can bound relation
+expansion; **\--omit-referenced/-R** disables all downward completion. Referenced
 objects need not match the expression. Output order is the input order.
 
 Without **--include-parents**, **-R** reads the input once. Otherwise multiple passes may be needed
@@ -52,6 +53,32 @@ This is a separate command. It does not change the syntax or behavior of
 -R, \--omit-referenced
 :   Do not add downward dependencies. Parent objects are still included when
     **--include-parents** is used. STDIN is permitted only without parent lookup.
+    Cannot be combined with **--downward-relation-hops**, including a limit of 0.
+
+\--downward-relation-hops=N
+:   Follow at most N downward relation-member edges from every intentionally
+    selected relation: original matches (after inversion) and explicitly
+    discovered reverse parents. Non-negative integers only. With this option
+    absent, completion remains recursive and unchanged.
+
+    At 0, retain selected relation headers and full member lists without following
+    their members. At 1, retain their direct node, way, and relation members;
+    member relations retain their headers and member lists but do not introduce
+    further dependencies unless independently selected. Higher limits permit
+    further relation-member expansion. Relation-to-way consumes one hop;
+    completing an included way's available nodes consumes no additional hop.
+    Independently selected ways retain their available nodes even at limit 0.
+
+    Every selected relation starts with the full budget, even if also encountered
+    as a member. Overlapping paths use the shallowest reachable depth (largest
+    remaining budget); cycles terminate without repeatedly expanding relations.
+    Results do not depend on the order of relations in the source.
+
+    Independent of **--include-parents** and **--parent-hops**. Dependencies never
+    become reverse-lookup seeds, and **--parents-expression** does not restrict
+    them. Selected objects keep their tags under **--remove-tags**; dependency-only
+    objects lose tags. Cannot be combined with **-R**, even at 0. Requires a
+    replayable source file, not STDIN, like normal reference completion.
 
 -t, \--remove-tags
 :   Remove tags from referenced-only objects. Objects that independently match
@@ -77,7 +104,8 @@ This is a separate command. It does not change the syntax or behavior of
     Zero disables parent lookup; 2 includes parents and grandparents. Requires
     **--include-parents**. Non-negative integers only. This controls reverse
     depth, **not** input passes or downward dependency depth. Normal downward
-    completion remains recursive unless **-R** is used. Every intentionally
+    completion remains recursive unless bounded by **--downward-relation-hops**
+    or disabled by **-R**. Every intentionally
     selected ancestor retains its tags under **--remove-tags**.
 
 \--parents-expression=EXPRESSION
@@ -218,6 +246,25 @@ Each expression is limited to 65536 bytes, 4096 expression-tree nodes, and 128
 levels of nested parentheses/NOT. Long AND/OR chains do not increase nesting.
 
 
+# BOUNDED MATERIALIZATION
+
+The downward limit controls object retention, not interpretation or geometry
+assembly. Retained objects keep their original metadata, member order, roles,
+and repeated memberships. Relation member lists are never trimmed to hide
+references outside the bound. For example, for `r1 -> r2 -> w3 -> nodes`, limit 1
+retains r1 and r2 but not w3 or its nodes. Independently selecting r2 gives it
+its own full budget, restoring w3 and its available nodes at limit 1.
+
+Bounded output can intentionally fail **osmium check-refs -r** because retained
+relation headers still reference omitted objects. Missing source members and
+way nodes are not fetched. The option does not imply reference completeness,
+repair geometry, or infer inherited tags. Distinguishing an object omitted by
+policy from one absent in the source still requires separate source-presence
+evidence; this feature does not provide that evidence. The parent relationship
+TSV continues to describe only reverse traversal occurrences, not downward
+dependencies or selection provenance.
+
+
 # MEMORY AND PERFORMANCE
 
 Expressions are compiled once. Evaluation does not allocate per object and
@@ -248,9 +295,26 @@ libosmium defaults, and does not reduce the number of input passes.
 With **--include-parents**, original matches and discovered parents are retained
 as sparse typed ID sets. For a maximum depth N, parent discovery needs up to N
 source-reader passes, stopping at exhaustion. Seed collection and ordered output
-add two passes; normal downward completion can add up to three more. Thus **-R**
+add two passes; unbounded downward completion can add up to three more. Thus **-R**
 uses up to N+2 passes, or normal completion up to N+5 (three and six at the
 default depth of 1). A hop is a membership edge, not an input pass.
+
+With **--downward-relation-hops=D**, bounded dependency discovery uses at most
+max(1, D) relation-reader passes when relation selection is needed: one to find
+all selected relations (and their direct members for D > 0), followed by frozen
+breadth-first levels. It stops when the frontier is exhausted or the bound is
+reached. Way-node completion adds at most one way-reader pass, and ordered output
+adds one pass. Thus without parents the maximum is max(1, D)+2 passes; with
+parent depth N it is N+max(1, D)+3, including seed collection. Unneeded type
+passes are skipped. Reader passes scan the relevant source types even for a
+small frontier, so large depth limits can increase I/O compared to unbounded
+completion.
+
+Bounded mode retains selection/dependency ID bitmaps and sparse current/next
+relation frontiers. It enforces the bound during discovery, without allocating
+an all-relations membership graph or building a whole recursive closure and
+pruning it afterward. Frontier memory is proportional to reached relation IDs,
+in addition to bitmap and I/O storage described above.
 
 
 # EXAMPLES
@@ -270,6 +334,12 @@ Include up to two reverse hops and then complete downward dependencies:
 
     osmium tags-filter-bool input.osm.pbf 'w/building' \
         --include-parents --parent-hops=2 -o context.osm.pbf
+
+Include one reverse parent hop, then only direct relation members and way nodes:
+
+    osmium tags-filter-bool input.osm.pbf 'w/building' \
+        --include-parents --parent-hops=1 --downward-relation-hops=1 \
+        -o bounded-context.osm.pbf
 
 When generating candidates for downstream rules, preserve every valid
 alternative. A candidate filter must be a safe superset of downstream
